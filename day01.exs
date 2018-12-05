@@ -19,14 +19,13 @@ defmodule Day01 do
     |> String.split(", ")
     |> Stream.map(&parse_num/1)
     |> Stream.cycle()
-    |> Enum.reduce_while([0], fn digit, acc ->
-        [last | _rest] = acc
-        sum = digit + last
+    |> Enum.reduce_while({0, MapSet.new([0])}, fn digit, {last, seen} ->
+      sum = digit + last
 
-      if Enum.member?(acc, sum) do
+      if Enum.member?(seen, sum) do
         {:halt, sum}
       else
-        {:cont, [sum | acc]}
+        {:cont, {sum, MapSet.put(seen, sum)}}
       end
     end)
   end
