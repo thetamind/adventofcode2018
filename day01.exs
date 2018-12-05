@@ -17,13 +17,8 @@ defmodule Day01 do
   def part2(input) do
     input
     |> String.split(", ")
-    |> Enum.map(&parse_num/1)
-    # [+3, +3, +4, -2, -4]...
-    # [+3, +6, 10, +8, +4, +7, 10]
-    # {[3],3}, {[3,6], 6}, {[3,6,10],10}
-    # [3], [6,3], [10,6,3], [8, 10, 6, 3]
-    # |> Enum.sum()
-    # |> Enum.sc
+    |> Stream.map(&parse_num/1)
+    |> Stream.cycle()
     |> Enum.reduce_while([0], fn digit, acc ->
         [last | _rest] = acc
         sum = digit + last
@@ -70,6 +65,6 @@ defmodule Day01Test do
       |> String.split("\n", trim: true)
       |> Enum.join(", ")
 
-    assert 400 == Day01.part2(input) |> Enum.take(-30)
+    assert 232 == Day01.part2(input)
   end
 end
