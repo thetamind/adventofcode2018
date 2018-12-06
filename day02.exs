@@ -3,21 +3,9 @@ defmodule Day02 do
     counts =
       examine_ids(ids)
       |> Enum.reduce(%{twos: 0, threes: 0}, fn {twos, threes}, acc ->
-        acc =
-          if twos do
-            Map.update!(acc, :twos, &(&1 + 1))
-          else
-            acc
-          end
-
-        acc =
-          if threes do
-            Map.update!(acc, :threes, &(&1 + 1))
-          else
-            acc
-          end
-
         acc
+        |> maybe_increment(:twos, twos)
+        |> maybe_increment(:threes, threes)
       end)
 
     twos = Map.get(counts, :twos)
@@ -51,6 +39,9 @@ defmodule Day02 do
       Map.update(acc, letter, 1, &(&1 + 1))
     end)
   end
+
+  defp maybe_increment(map, key, true), do: Map.update!(map, key, &(&1 + 1))
+  defp maybe_increment(map, _key, false), do: map
 end
 
 ExUnit.start()
