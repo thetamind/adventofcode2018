@@ -55,6 +55,25 @@ defmodule Day03 do
       allocations
       |> Enum.count(fn {_pos, ids} -> Enum.count(ids) > 1 end)
     end
+
+    def isolated_claim(%Fabric{allocations: allocations}) do
+      all_ids =
+        Enum.reduce(allocations, MapSet.new(), fn {_pos, ids}, acc ->
+          MapSet.union(acc, MapSet.new(ids))
+        end)
+
+      overlapping_ids =
+        Enum.reduce(allocations, MapSet.new(), fn {_pos, ids}, acc ->
+          if Enum.count(ids) > 1 do
+            MapSet.union(acc, MapSet.new(ids))
+          else
+            acc
+          end
+        end)
+
+      MapSet.difference(all_ids, overlapping_ids)
+      |> Enum.at(0)
+    end
   end
 
   def parse_input(lines) do
@@ -120,7 +139,19 @@ defmodule Day03Test do
     test "puzzle overlapping count" do
       claims = Day03.parse_input(puzzle_input())
       fabric = Fabric.new(claims)
-      assert 109716 == Fabric.overlapping_count(fabric)
+      assert 109_716 == Fabric.overlapping_count(fabric)
+    end
+
+    test "example isolated claim" do
+      claims = Day03.parse_input(example_input())
+      fabric = Fabric.new(claims)
+      assert 3 == Fabric.isolated_claim(fabric)
+    end
+
+    test "puzzle isolated claim" do
+      claims = Day03.parse_input(puzzle_input())
+      fabric = Fabric.new(claims)
+      assert 124 == Fabric.isolated_claim(fabric)
     end
 
     defp example_input() do
