@@ -2,6 +2,40 @@ defmodule Day4 do
   defmodule Log do
     def parse(data) do
       data
+      |> parse_lines()
+      |> process_log
+    end
+
+    # date, message
+    # date, event, guard_id
+    # {month, day}, guard_id, {sleep, awake}
+    def process_log(lines) do
+      lines
+      |> Enum.sort_by(fn {date, _} -> date end)
+      |> Enum.reduce({nil, []}, fn {date, message}, {guard, acc} ->
+        guard =
+          case Regex.run(~r/#(\d+)/, message) do
+            [_, id] -> String.to_integer(id)
+            nil -> guard
+          end
+
+        event =
+          case message do
+            "falls asleep" -> {date.month, date.day, guard, :sleep, date.minute}
+            "wakes up" -> {date.month, date.day, guard, :awake, date.minute}
+            _ -> nil
+          end
+
+        acc = if event, do: [event | acc], else: acc
+
+        {guard, acc}
+      end)
+      |> elem(1)
+      |> Enum.reverse()
+    end
+
+    def parse_lines(data) do
+      data
       |> String.split("\n", trim: true)
       |> Enum.map(&parse_line/1)
     end
@@ -32,13 +66,24 @@ ExUnit.start(seed: 0, trace: true)
 defmodule Day4Test do
   use ExUnit.Case, async: true
 
-  describe "example log" do
-    test "events" do
+  describe "example" do
+    test "parse log" do
+      lines = Day4.Log.parse_lines(sample_input())
+
+      assert 17 == Enum.count(lines)
+      expected = {~N[1518-11-01 00:00:00], "Guard #10 begins shift"}
+      assert expected == Enum.at(lines, 0)
+    end
+
+    test "log to events" do
       events = Day4.Log.parse(sample_input())
 
-      assert 17 == Enum.count(events)
-      expected = {~N[1518-11-01 00:00:00], "Guard #10 begins shift"}
-      assert expected == Enum.at(events, 0)
+      assert 12 == Enum.count(events)
+      assert {11, 1, 10, :sleep, 5} = Enum.at(events, 0)
+      assert {11, 1, 10, :awake, 25} = Enum.at(events, 1)
+      assert {11, 1, 10, :sleep, 30} = Enum.at(events, 2)
+      assert {11, 1, 10, :awake, 55} = Enum.at(events, 3)
+      assert {11, 2, 99, :sleep, 40} = Enum.at(events, 4)
     end
 
     defp sample_input() do
