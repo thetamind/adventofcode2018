@@ -161,7 +161,26 @@ defmodule Day4 do
     end
 
     def sleepiest_guard_minute(events, guard) do
-      :not_implemented
+      days = Day4.Chart.to_days(events)
+
+      intervals =
+        days
+        |> Enum.filter(fn {{_, _, id}, _} ->
+          guard == id
+        end)
+        |> Enum.flat_map(&elem(&1, 1))
+
+      0..59
+      |> Enum.reduce(%{}, fn minute, acc ->
+        sleeping_count =
+          Enum.filter(intervals, &Interval.member?(&1, minute))
+          |> Enum.count()
+
+        Map.update(acc, minute, sleeping_count, &(&1 + sleeping_count))
+      end)
+      |> Enum.sort_by(&elem(&1, 1), &>=/2)
+      |> Enum.at(0)
+      |> elem(0)
     end
 
     def sleep_time({{_, _, guard}, intervals}) do
