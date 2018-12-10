@@ -11,7 +11,7 @@ defmodule Day4 do
     # {month, day}, guard_id, {sleep, awake}
     def process_log(lines) do
       lines
-      |> Enum.sort_by(fn {date, _} -> date end)
+      |> Enum.sort(fn {date1, _}, {date2, _} -> NaiveDateTime.compare(date1, date2) == :lt end)
       |> Enum.reduce({nil, []}, fn {date, message}, {guard, acc} ->
         guard =
           case Regex.run(~r/#(\d+)/, message) do
@@ -83,8 +83,8 @@ defmodule Day4 do
 
   defmodule Chart do
     def chart(events) do
-      title = "Date   ID   Minute"
-      spacer = String.pad_leading("", 12)
+      title = "Date   ID     Minute"
+      spacer = String.pad_leading("", 14)
 
       header1 =
         0..5
@@ -100,11 +100,17 @@ defmodule Day4 do
       end
 
       report_day = fn {{month, day, guard}, intervals} ->
-        padded_day = String.pad_leading(to_string(day), 2, ["0"])
+        pad = fn el, count ->
+          String.pad_leading(to_string(el), count)
+        end
+
+        pad0 = fn el, count ->
+          String.pad_leading(to_string(el), count, ["0"])
+        end
 
         dots = Enum.map(0..59, &report_minute.(&1, intervals))
 
-        "#{month}-#{padded_day}  ##{guard}  #{dots}"
+        "#{pad.(month, 2)}-#{pad0.(day, 2)}  ##{pad.(guard, 4)}  #{dots}"
       end
 
       body = days |> Enum.map(report_day) |> Enum.join("\n")
@@ -127,6 +133,7 @@ defmodule Day4 do
       |> Enum.into(%{}, fn {k, actions} ->
         {k, to_intervals(actions)}
       end)
+      |> Enum.sort_by(fn {{month, day, _}, _} -> {month, day} end)
     end
 
     def to_interval([{:sleep, start}, {:awake, stop}]) do
@@ -244,14 +251,14 @@ defmodule Day4Test do
 
       expected =
         """
-        Date   ID   Minute
-                    000000000011111111112222222222333333333344444444445555555555
-                    012345678901234567890123456789012345678901234567890123456789
-        11-01  #10  .....####################.....#########################.....
-        11-02  #99  ........................................##########..........
-        11-03  #10  ........................#####...............................
-        11-04  #99  ....................................##########..............
-        11-05  #99  .............................................##########.....
+        Date   ID     Minute
+                      000000000011111111112222222222333333333344444444445555555555
+                      012345678901234567890123456789012345678901234567890123456789
+        11-01  #  10  .....####################.....#########################.....
+        11-02  #  99  ........................................##########..........
+        11-03  #  10  ........................#####...............................
+        11-04  #  99  ....................................##########..............
+        11-05  #  99  .............................................##########.....
         """
         |> String.trim_trailing("\n")
 
@@ -294,6 +301,48 @@ defmodule Day4Test do
       [1518-11-05 00:45] falls asleep
       [1518-11-05 00:55] wakes up
       """
+    end
+  end
+
+  describe "puzzle" do
+    test "visual chart" do
+      events = Day4.Log.parse(puzzle_input())
+      chart = Day4.Chart.chart(events)
+
+      expected =
+        """
+        Date   ID     Minute
+                      000000000011111111112222222222333333333344444444445555555555
+                      012345678901234567890123456789012345678901234567890123456789
+         3-06  #2963  .........................#####################..............
+         3-07  #  89  ...............##################...........................
+         3-08  #3137  .................#######........########################....
+         3-09  #3511  .........###########..............................######....
+         3-10  #2251  ................####################...#################....
+         3-11  # 857  .....................#######################................
+         3-12  #  89  ..###############.....##########################......#####.
+        """
+        |> String.trim_trailing("\n")
+
+      length = String.length(expected)
+      part = String.split_at(chart, length) |> elem(0)
+
+      assert expected == part
+    end
+
+    test "strategy 1 solution" do
+      events = Day4.Log.parse(puzzle_input())
+      assert 39_422 == Day4.Strategy1.solve(events)
+    end
+
+    test "strategy 1 sleepiest guard minute" do
+      events = Day4.Log.parse(puzzle_input())
+      {guard, _} = Day4.Strategy1.sleepiest_guard(events)
+      assert 46 == Day4.Strategy1.sleepiest_guard_minute(events, guard)
+    end
+
+    def puzzle_input do
+      File.read!("day04.txt")
     end
   end
 end
