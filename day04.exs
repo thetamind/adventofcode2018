@@ -59,12 +59,112 @@ defmodule Day4 do
       Regex.named_captures(pattern, line)
     end
   end
+
+  defmodule Interval do
+    @enforce_keys [:start, :stop]
+    defstruct [:start, :stop]
+
+    @type t :: %Interval{
+            start: non_neg_integer,
+            stop: non_neg_integer
+          }
+
+    def member?(%Interval{stop: stop}, element) when element == stop, do: false
+
+    def member?(%Interval{start: start, stop: stop}, element) do
+      start..stop
+      |> Enum.member?(element)
+    end
+  end
+
+  defmodule Chart do
+    def chart(events) do
+      title = "Date   ID   Minute"
+      spacer = String.pad_leading("", 12)
+
+      header1 =
+        0..5
+        |> Enum.map(&String.duplicate(to_string(&1), 10))
+        |> Enum.join()
+
+      header2 = String.duplicate(to_string("0123456789"), 6)
+
+      days = to_days(events)
+
+      report_minute = fn minute, intervals ->
+        if Enum.any?(intervals, &Interval.member?(&1, minute)), do: "#", else: "."
+      end
+
+      report_day = fn {{month, day, guard}, intervals} ->
+        padded_day = String.pad_leading(to_string(day), 2, ["0"])
+
+        dots = Enum.map(0..59, &report_minute.(&1, intervals))
+
+        "#{month}-#{padded_day}  ##{guard}  #{dots}"
+      end
+
+      body = days |> Enum.map(report_day) |> Enum.join("\n")
+
+      header = title <> "\n" <> spacer <> header1 <> "\n" <> spacer <> header2 <> "\n"
+
+      header <> body
+    end
+
+    def to_days(events) do
+      events
+      |> Enum.group_by(
+        fn {month, day, guard, _, _} ->
+          {month, day, guard}
+        end,
+        fn {_, _, _, action, minute} ->
+          {action, minute}
+        end
+      )
+      |> Enum.into(%{}, fn {k, actions} ->
+        {k, to_intervals(actions)}
+      end)
+    end
+
+    def to_interval([{:sleep, start}, {:awake, stop}]) do
+      %Interval{start: start, stop: stop}
+    end
+
+    def to_intervals(actions) do
+      actions
+      |> Enum.chunk_every(2)
+      |> Enum.map(&to_interval/1)
+    end
+  end
 end
 
 ExUnit.start(seed: 0, trace: true)
 
 defmodule Day4Test do
   use ExUnit.Case, async: true
+
+  alias Day4.Interval
+
+  describe "Interval" do
+    test "member?" do
+      interval = %Interval{start: 10, stop: 25}
+      assert Interval.member?(interval, 10)
+      assert Interval.member?(interval, 20)
+      refute Interval.member?(interval, 25)
+    end
+
+    test "member? empty interval" do
+      interval = %Interval{start: 0, stop: 0}
+      refute Interval.member?(interval, 0)
+      refute Interval.member?(interval, 1)
+    end
+
+    test "member? reverse interval" do
+      interval = %Interval{start: 0, stop: -1}
+      assert Interval.member?(interval, 0)
+      refute Interval.member?(interval, -1)
+      refute Interval.member?(interval, 1)
+    end
+  end
 
   describe "example" do
     test "parse log" do
@@ -86,7 +186,26 @@ defmodule Day4Test do
       assert {11, 2, 99, :sleep, 40} = Enum.at(events, 4)
     end
 
-    defp sample_input() do
+    test "visual chart" do
+      events = Day4.Log.parse(sample_input())
+
+      expected =
+        """
+        Date   ID   Minute
+                    000000000011111111112222222222333333333344444444445555555555
+                    012345678901234567890123456789012345678901234567890123456789
+        11-01  #10  .....####################.....#########################.....
+        11-02  #99  ........................................##########..........
+        11-03  #10  ........................#####...............................
+        11-04  #99  ....................................##########..............
+        11-05  #99  .............................................##########.....
+        """
+        |> String.trim_trailing("\n")
+
+      assert expected == Day4.Chart.chart(events)
+    end
+
+    defp sample_input do
       """
       [1518-11-01 00:00] Guard #10 begins shift
       [1518-11-01 00:05] falls asleep
