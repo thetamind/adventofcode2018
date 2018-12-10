@@ -75,6 +75,10 @@ defmodule Day4 do
       start..stop
       |> Enum.member?(element)
     end
+
+    def minutes(%Interval{start: start, stop: stop}) do
+      stop - start
+    end
   end
 
   defmodule Chart do
@@ -133,6 +137,36 @@ defmodule Day4 do
       actions
       |> Enum.chunk_every(2)
       |> Enum.map(&to_interval/1)
+    end
+  end
+
+  defmodule Strategy1 do
+    def solve(events) do
+      {guard, _} = sleepiest_guard(events)
+      minute = sleepiest_guard_minute(events, guard)
+
+      guard * minute
+    end
+
+    def sleepiest_guard(events) do
+      days = Day4.Chart.to_days(events)
+
+      days
+      |> Enum.map(&sleep_time/1)
+      |> Enum.reduce(%{}, fn {guard, minutes}, acc ->
+        Map.update(acc, guard, minutes, &(&1 + minutes))
+      end)
+      |> Enum.sort_by(&elem(&1, 1), &>=/2)
+      |> Enum.at(0)
+    end
+
+    def sleepiest_guard_minute(events, guard) do
+      :not_implemented
+    end
+
+    def sleep_time({{_, _, guard}, intervals}) do
+      minutes = Enum.map(intervals, &Interval.minutes/1) |> Enum.sum()
+      {guard, minutes}
     end
   end
 end
@@ -203,6 +237,22 @@ defmodule Day4Test do
         |> String.trim_trailing("\n")
 
       assert expected == Day4.Chart.chart(events)
+    end
+
+    test "strategy 1 solution" do
+      events = Day4.Log.parse(sample_input())
+      assert 240 == Day4.Strategy1.solve(events)
+    end
+
+    test "strategy 1 sleepiest guard" do
+      events = Day4.Log.parse(sample_input())
+      assert {10, 50} == Day4.Strategy1.sleepiest_guard(events)
+    end
+
+    test "strategy 1 sleepiest guard minute" do
+      events = Day4.Log.parse(sample_input())
+      {guard, _} = Day4.Strategy1.sleepiest_guard(events)
+      assert 24 == Day4.Strategy1.sleepiest_guard_minute(events, guard)
     end
 
     defp sample_input do
