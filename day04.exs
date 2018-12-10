@@ -110,6 +110,8 @@ defmodule Day4 do
       header <> body
     end
 
+    @type day_with_guard :: {non_neg_integer, non_neg_integer, non_neg_integer}
+    @spec to_days([...]) :: %{required(day_with_guard()) => [Interval.t()]}
     def to_days(events) do
       events
       |> Enum.group_by(
@@ -125,14 +127,30 @@ defmodule Day4 do
       end)
     end
 
+    @spec to_interval(any()) :: Interval.t()
     def to_interval([{:sleep, start}, {:awake, stop}]) do
       %Interval{start: start, stop: stop}
     end
 
+    @spec to_intervals([...]) :: [Interval.t()]
     def to_intervals(actions) do
       actions
       |> Enum.chunk_every(2)
       |> Enum.map(&to_interval/1)
+    end
+  end
+
+  defmodule Strategy1 do
+    def solve(events) do
+      100
+    end
+
+    def sleepiest_guard(events) do
+      :not_implemented
+    end
+
+    def sleepiest_guard_minute(events) do
+      :not_implemented
     end
   end
 end
@@ -203,6 +221,17 @@ defmodule Day4Test do
         |> String.trim_trailing("\n")
 
       assert expected == Day4.Chart.chart(events)
+    end
+
+    test "strategy 1 solution" do
+      events = Day4.Log.parse(sample_input())
+      assert 240 == Day4.Strategy1.solve(events)
+    end
+
+    test "strategy 1 sleepiest guard" do
+      events = Day4.Log.parse(sample_input())
+      assert 10 == Day4.Strategy1.sleepiest_guard(events)
+      assert 24 == Day4.Strategy1.sleepiest_guard_minute(events)
     end
 
     defp sample_input do
