@@ -79,6 +79,13 @@ defmodule Day4 do
     def minutes(%Interval{start: start, stop: stop}) do
       stop - start
     end
+
+    def to_list(%Interval{start: start, stop: stop}) when start == stop, do: []
+
+    def to_list(%Interval{start: start, stop: stop}) do
+      start..(stop - 1)
+      |> Enum.to_list()
+    end
   end
 
   defmodule Chart do
@@ -195,6 +202,65 @@ defmodule Day4 do
       {guard, minutes}
     end
   end
+
+  defmodule Strategy2 do
+    # group by guard
+    # count by minute sleeping
+    def solve(events) do
+      {guard, {minute, _count}} = sleepiest_guard_minute(events)
+
+      guard * minute
+    end
+
+    def sleepiest_guard_minute(events) do
+      days = Day4.Chart.to_days(events)
+
+      days
+      |> Enum.map(&sleeping_minutes/1)
+      |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+      |> Enum.map(fn {k, intervals} ->
+        minutes =
+          intervals
+          |> List.flatten()
+          |> Enum.flat_map(&Interval.to_list/1)
+          |> Enum.reduce(%{}, fn minute, acc ->
+            Map.update(acc, minute, 1, &(&1 + 1))
+          end)
+          |> Enum.sort_by(fn {_minute, count} -> count end, &>=/2)
+          |> Enum.at(0)
+
+        {k, minutes}
+      end)
+      |> Enum.sort_by(fn {_guard, {_minute, count}} -> count end, &>=/2)
+      |> Enum.at(0)
+
+      # &{guard => [intervals]}
+      # &{guard => [minutes]}
+      # &{guard => most slept minute}
+      # |> Enum.sort_by()
+    end
+
+    def sleeping_minutes({{_, _, guard}, intervals}) do
+      {guard, intervals}
+    end
+
+    def sleepiest_guard(events) do
+      days = Day4.Chart.to_days(events)
+
+      days
+      |> Enum.map(&sleep_time/1)
+      |> Enum.reduce(%{}, fn {guard, minutes}, acc ->
+        Map.update(acc, guard, minutes, &(&1 + minutes))
+      end)
+      |> Enum.sort_by(&elem(&1, 1), &>=/2)
+      |> Enum.at(0)
+    end
+
+    def sleep_time({{_, _, guard}, intervals}) do
+      minutes = Enum.map(intervals, &Interval.minutes/1) |> Enum.sum()
+      {guard, minutes}
+    end
+  end
 end
 
 ExUnit.start(seed: 0, trace: true)
@@ -223,6 +289,14 @@ defmodule Day4Test do
       assert Interval.member?(interval, 0)
       refute Interval.member?(interval, -1)
       refute Interval.member?(interval, 1)
+    end
+
+    test "to_list" do
+      interval = %Interval{start: 2, stop: 8}
+      assert [2, 3, 4, 5, 6, 7] == Interval.to_list(interval)
+
+      interval = %Interval{start: 0, stop: 0}
+      assert [] == Interval.to_list(interval)
     end
   end
 
@@ -279,6 +353,16 @@ defmodule Day4Test do
       events = Day4.Log.parse(sample_input())
       {guard, _} = Day4.Strategy1.sleepiest_guard(events)
       assert 24 == Day4.Strategy1.sleepiest_guard_minute(events, guard)
+    end
+
+    test "strategy 2 solution" do
+      events = Day4.Log.parse(sample_input())
+      assert 4455 == Day4.Strategy2.solve(events)
+    end
+
+    test "strategy 2 sleepiest guard minute" do
+      events = Day4.Log.parse(sample_input())
+      assert {99, {45, 3}} = Day4.Strategy2.sleepiest_guard_minute(events)
     end
 
     defp sample_input do
@@ -339,6 +423,16 @@ defmodule Day4Test do
       events = Day4.Log.parse(puzzle_input())
       {guard, _} = Day4.Strategy1.sleepiest_guard(events)
       assert 46 == Day4.Strategy1.sleepiest_guard_minute(events, guard)
+    end
+
+    test "strategy 2 solution" do
+      events = Day4.Log.parse(puzzle_input())
+      assert 65_474 == Day4.Strategy2.solve(events)
+    end
+
+    test "strategy 2 sleepiest guard minute" do
+      events = Day4.Log.parse(puzzle_input())
+      assert {1723, {38, 20}} = Day4.Strategy2.sleepiest_guard_minute(events)
     end
 
     def puzzle_input do
