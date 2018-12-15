@@ -12,7 +12,7 @@ defmodule Day5 do
   end
 
   def do_shrink("", acc) do
-    String.reverse(acc)
+    String.to_charlist(acc) |> Enum.reverse() |> to_string()
   end
 
   def part2(polymer) do
@@ -22,7 +22,7 @@ defmodule Day5 do
   end
 
   @patterns Enum.map(?a..?z, fn unit ->
-              pattern = ~r/[#{<<unit>>}|#{String.upcase(<<unit>>)}]/
+              pattern = ~r/[#{<<unit>>}|#{String.upcase(<<unit>>, :ascii)}]/
               {<<unit>>, pattern}
             end)
 
