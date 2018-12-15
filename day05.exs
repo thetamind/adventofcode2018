@@ -35,6 +35,23 @@ defmodule Day5 do
       {unit, length, shrunk}
     end)
   end
+
+  def concurrent_part2(polymer) do
+    @patterns
+    |> Task.async_stream(
+      fn {unit, pattern} ->
+        shrunk = String.replace(polymer, pattern, "") |> shrink()
+
+        length = String.length(shrunk)
+
+        {unit, length, shrunk}
+      end,
+      ordered: false,
+      max_concurrency: 26
+    )
+    |> Stream.map(fn {:ok, res} -> res end)
+    |> Enum.min_by(fn {_, length, _} -> length end)
+  end
 end
 
 ExUnit.start(seed: 0, trace: true)
@@ -81,6 +98,11 @@ defmodule Day5Test do
     test "determine which type to remove to produce shortest polymer" do
       input = File.read!("day05.txt") |> String.trim_trailing("\n")
       assert {"w", 4956, _} = Day5.part2(input)
+    end
+
+    test "concurrently determine which type to remove to produce shortest polymer" do
+      input = File.read!("day05.txt") |> String.trim_trailing("\n")
+      assert {"w", 4956, _} = Day5.concurrent_part2(input)
     end
   end
 end
