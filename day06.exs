@@ -1,3 +1,21 @@
+defmodule Day6 do
+  def largest_area(coordinates) do
+    plot = Day6.Grid.plot_distance(coordinates)
+
+    plot
+    |> String.to_charlist()
+    |> Enum.reduce(%{}, fn label, acc ->
+      acc =
+      case label do
+        "\n" -> acc
+        "." -> acc
+        label -> Map.update(acc, label, 1, &(&1 + 1))
+      end
+      acc
+    end)
+  end
+end
+
 defmodule Day6.Grid do
   def plot(coordinates) do
     labels = labels_for(coordinates)
@@ -123,6 +141,21 @@ defmodule Day6Test do
       ]
 
       assert expected == Day6.Grid.plot_distance(coordinates)
+    end
+  end
+
+  describe "largest area" do
+    test "example" do
+      coordinates = [
+        {1, 1},
+        {1, 6},
+        {8, 3},
+        {3, 4},
+        {5, 5},
+        {8, 9}
+      ]
+
+      assert {"E", 17} = Day6.largest_area(coordinates)
     end
   end
 end
