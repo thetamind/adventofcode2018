@@ -1,6 +1,6 @@
 defmodule Day6 do
-  def largest_area(coordinates) do
-    plot = Day6.Grid.plot_distance(coordinates)
+  def largest_area(coordinates, size \\ 9) do
+    plot = Day6.Grid.plot_distance(coordinates, size)
 
     ignored = ignored_labels(plot)
 
@@ -32,22 +32,22 @@ defmodule Day6 do
 end
 
 defmodule Day6.Grid do
-  def plot(coordinates) do
+  def plot(coordinates, size \\ 9) do
     labels = labels_for(coordinates)
 
-    for y <- 0..9 do
-      for x <- 0..9 do
+    for y <- 0..size do
+      for x <- 0..size do
         point = {x, y}
         if Enum.member?(coordinates, point), do: label_for(labels, point), else: "."
       end
     end
   end
 
-  def plot_distance(coordinates) do
+  def plot_distance(coordinates, size \\ 9) do
     labels = labels_for(coordinates)
 
-    for y <- 0..9 do
-      for x <- 0..9 do
+    for y <- 0..size do
+      for x <- 0..size do
         point = {x, y}
 
         if Enum.member?(coordinates, point) do
@@ -95,6 +95,13 @@ defmodule Day6.Grid do
 
   def manhattan({x1, y1}, {x2, y2}) do
     abs(x1 - x2) + abs(y1 - y2)
+  end
+
+  def extents(coordinates) do
+    coordinates
+    |> Enum.reduce(fn {x, y}, {xm, ym} ->
+      {max(x, xm), max(y, ym)}
+    end)
   end
 end
 
@@ -187,5 +194,28 @@ defmodule Day6Test do
 
       assert {"e", 17} = Day6.largest_area(coordinates)
     end
+  end
+
+  describe "puzzle" do
+    test "largest area" do
+      coordinates =
+        File.read!("day06.txt")
+        |> String.split("\n", trim: true)
+        |> Enum.map(&parse_coordinate/1)
+
+      size =
+        Day6.Grid.extents(coordinates)
+        |> Tuple.to_list()
+        |> Enum.max()
+
+      assert {"i", 5432} = Day6.largest_area(coordinates, size)
+    end
+  end
+
+  def parse_coordinate(string) do
+    string
+    |> String.split(", ")
+    |> Enum.map(&String.to_integer/1)
+    |> List.to_tuple()
   end
 end
