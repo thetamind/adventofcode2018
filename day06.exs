@@ -2,17 +2,32 @@ defmodule Day6 do
   def largest_area(coordinates) do
     plot = Day6.Grid.plot_distance(coordinates)
 
+    ignored = ignored_labels(plot)
+
     plot
-    |> String.to_charlist()
+    |> List.flatten()
     |> Enum.reduce(%{}, fn label, acc ->
-      acc =
-      case label do
-        "\n" -> acc
-        "." -> acc
-        label -> Map.update(acc, label, 1, &(&1 + 1))
-      end
-      acc
+      Map.update(acc, String.downcase(label, :ascii), 1, &(&1 + 1))
     end)
+    |> Map.to_list()
+    |> Enum.reject(fn {label, _} -> Enum.member?(ignored, label) end)
+    |> List.keysort(1)
+    |> List.last()
+  end
+
+  defp ignored_labels(plot) do
+    plot
+    |> border_labels()
+    |> Enum.map(&String.downcase(&1, :ascii))
+    |> Enum.uniq()
+  end
+
+  defp border_labels(plot) do
+    first_last(plot) ++ first_last(Matrix.transpose(plot))
+  end
+
+  defp first_last(plot) do
+    List.first(plot) ++ List.last(plot)
   end
 end
 
@@ -26,8 +41,6 @@ defmodule Day6.Grid do
         if Enum.member?(coordinates, point), do: label_for(labels, point), else: "."
       end
     end
-    |> Enum.map(&Enum.join(&1))
-    |> Enum.join("\n")
   end
 
   def plot_distance(coordinates) do
@@ -50,6 +63,10 @@ defmodule Day6.Grid do
         end
       end
     end
+  end
+
+  def inspect(plot) do
+    plot
     |> Enum.map(&Enum.join(&1))
     |> Enum.join("\n")
   end
@@ -79,6 +96,19 @@ defmodule Day6.Grid do
   def manhattan({x1, y1}, {x2, y2}) do
     abs(x1 - x2) + abs(y1 - y2)
   end
+end
+
+defmodule Matrix do
+  # Source: https://github.com/pmarreck/elixir-snippets/blob/master/matrix.exs
+  # this crazy clever algorithm hails from
+  # http://stackoverflow.com/questions/5389254/transposing-a-2-dimensional-matrix-in-erlang
+  # and is apparently from the Haskell stdlib. I implicitly trust Haskellers.
+  def transpose([[x | xs] | xss]) do
+    [[x | for([h | _] <- xss, do: h)] | transpose([xs | for([_ | t] <- xss, do: t)])]
+  end
+
+  def transpose([[] | xss]), do: transpose(xss)
+  def transpose([]), do: []
 end
 
 ExUnit.start(seed: 0, trace: true)
@@ -112,7 +142,7 @@ defmodule Day6Test do
         {8, 9}
       ]
 
-      assert expected == Day6.Grid.plot(coordinates)
+      assert expected == Day6.Grid.plot(coordinates) |> Day6.Grid.inspect()
     end
 
     test "example with distance" do
@@ -140,7 +170,7 @@ defmodule Day6Test do
         {8, 9}
       ]
 
-      assert expected == Day6.Grid.plot_distance(coordinates)
+      assert expected == Day6.Grid.plot_distance(coordinates) |> Day6.Grid.inspect()
     end
   end
 
@@ -155,7 +185,7 @@ defmodule Day6Test do
         {8, 9}
       ]
 
-      assert {"E", 17} = Day6.largest_area(coordinates)
+      assert {"e", 17} = Day6.largest_area(coordinates)
     end
   end
 end
