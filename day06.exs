@@ -111,19 +111,21 @@ defmodule Day6.Grid do
   def ascii_labeller(values) do
     # pixels = String.split(" .,:;i1tfLCG08@", "", trim: true)
     pixels = String.split(" .○☼•❄", "", trim: true)
-    pixel_count = Enum.count(pixels)
     bins = make_bins(values, pixels)
-    labeller = make_labeller(bins, pixels)
+    make_labeller(bins, pixels)
+  end
 
-    pixel_for = fn value ->
-      Enum.find(labeller, {:not_found, "?"}, fn {min, label} ->
-        value >= min
+  def pixel_for(labeller) do
+    fn _point, value ->
+      labeller
+      |> Enum.reduce_while({0, "?"}, fn {min, label}, {last, last_label} ->
+        cond do
+          min == value -> {:halt, {min, label}}
+          value > min -> {:cont, {min, label}}
+          value < min -> {:halt, {last, last_label}}
+        end
       end)
       |> elem(1)
-    end
-
-    fn _point, value ->
-      pixel_for.(value)
     end
   end
 
@@ -305,6 +307,7 @@ defmodule Day6Test do
         lookup
         |> Map.values()
         |> Day6.Grid.ascii_labeller()
+        |> Day6.Grid.pixel_for()
 
       grid
       |> Day6.Grid.label_grid(labeller)
@@ -371,26 +374,23 @@ defmodule Day6.BinTest do
     assert [18, 24, 30, 36, 42, 48] == bins
   end
 
-  test "lookups" do
-    lookup = [
-      {{28, 30}, " "},
-      {{32, 34}, "."},
-      {{36, 38}, "○"},
-      {{40, 42}, "☼"},
-      {{44, 46}, "•"},
-      {{48, 50}, "❄"}
+  test "pixel_for" do
+    labels = [
+      {28, " "},
+      {32, "."},
+      {36, "○"},
+      {40, "☼"},
+      {44, "•"},
+      {48, "❄"}
     ]
 
-    pixel_for = fn value ->
-      Enum.find(lookup, {:not_found, "?"}, fn {{low, high}, label} ->
-        value >= low and value <= high
-      end)
-    end
+    lookup = Day6.Grid.pixel_for(labels)
+    pixel_for = &lookup.({0, 0}, &1)
 
-    assert {{32, 34}, "."} = pixel_for.(32)
-    assert {{32, 34}, "."} = pixel_for.(33)
-    assert {{32, 34}, "."} = pixel_for.(34)
-    assert {{36, 38}, "○"} = pixel_for.(36)
-    assert {:not_found, "?"} = pixel_for.(99)
+    assert "." = pixel_for.(32)
+    assert "." = pixel_for.(33)
+    assert "." = pixel_for.(34)
+    assert "○" = pixel_for.(36)
+    assert "❄" = pixel_for.(99)
   end
 end
