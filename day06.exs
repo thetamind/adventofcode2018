@@ -116,8 +116,8 @@ defmodule Day6.Grid do
     labeller = make_labeller(bins, pixels)
 
     pixel_for = fn value ->
-      Enum.find(labeller, {:not_found, "?"}, fn {{low, high}, label} ->
-        value >= low and value <= high
+      Enum.find(labeller, {:not_found, "?"}, fn {min, label} ->
+        value >= min
       end)
       |> elem(1)
     end
@@ -128,45 +128,27 @@ defmodule Day6.Grid do
   end
 
   def make_labeller(bins, labels) do
+    if Enum.count(bins) != Enum.count(labels) do
+      IO.inspect(bins, label: "bins(#{Enum.count(bins)})")
+      IO.inspect(labels, label: "labels(#{Enum.count(labels)})")
+      raise "Not same length"
+    end
+
     bins
     |> Enum.zip(labels)
     |> IO.inspect(label: "bins")
   end
 
+  def step(min, max, step) do
+    Enum.take_every(min..max, step)
+  end
+
   def make_bins(values, labels) do
-    IO.puts(labels |> Enum.join())
-    count = Enum.count(labels)
-    values = Enum.sort(values)
     {min, max} = Enum.min_max(values)
-    IO.inspect({min, max}, label: "range")
-    rise = max - min
-    run = Enum.count(values)
-    IO.inspect(rise, label: "rise")
-    IO.inspect(run, label: "run")
 
-    slope =
-      (rise / run)
-      |> IO.inspect(label: "slope")
+    step = div(max - min, Enum.count(labels)) + 1
 
-    # y - y1 = m(x - x1)
-    x = 20
-    y = slope * x + min
-    IO.inspect(y, label: "y")
-
-    uniq_values = Enum.uniq(values) |> Enum.sort()
-    uniq_count = Enum.count(uniq_values)
-
-    chunk_size =
-      max(div(uniq_count, count), 1)
-      |> IO.inspect(label: "chunk_size")
-
-    keys =
-      uniq_values
-      |> Enum.chunk_every(chunk_size)
-      |> Enum.map(fn chunk ->
-        {List.first(chunk), List.last(chunk)}
-      end)
-      |> IO.inspect(label: "chunks", charlists: :as_lists)
+    step(min, max, step)
   end
 
   def inspect(plot) do
@@ -368,6 +350,26 @@ end
 
 defmodule Day6.BinTest do
   use ExUnit.Case, async: true
+
+  test "step" do
+    assert [1, 3, 5, 7, 9] == Day6.Grid.step(1, 10, 2)
+  end
+
+  test "make bins 1" do
+    values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    labels = ~w(A B C D E)
+
+    bins = Day6.Grid.make_bins(values, labels)
+    assert [1, 3, 5, 7, 9] == bins
+  end
+
+  test "make bins 2" do
+    values = [18, 25, 30, 50]
+    labels = ~w(1 2 3 4 5 6)
+
+    bins = Day6.Grid.make_bins(values, labels)
+    assert [18, 24, 30, 36, 42, 48] == bins
+  end
 
   test "lookups" do
     lookup = [
