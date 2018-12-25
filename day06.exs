@@ -298,9 +298,6 @@ defmodule Day6Test do
       grid = Day6.Grid.manhattan_sums(coordinates)
       lookup = Day6.Grid.to_lookup(grid)
 
-      assert 30 = Day6.manhattan_sum(lookup, {4, 3})
-      # assert 16 = Day6.safe_region_size(lookup, 32)
-
       IO.puts("\n")
 
       labeller =
@@ -313,6 +310,9 @@ defmodule Day6Test do
       |> Day6.Grid.label_grid(labeller)
       |> Day6.Grid.inspect()
       |> IO.puts()
+
+      assert 30 = Day6.manhattan_sum(lookup, {4, 3})
+      assert 16 = Day6.safe_region_size(lookup, 32)
     end
   end
 
@@ -337,9 +337,15 @@ defmodule Day6Test do
         |> String.split("\n", trim: true)
         |> Enum.map(&parse_coordinate/1)
 
-      grid = Day6.Grid.manhattan_sums(coordinates)
+      size =
+        Day6.Grid.extents(coordinates)
+        |> Tuple.to_list()
+        |> Enum.max()
+
+      grid = Day6.Grid.manhattan_sums(coordinates, size)
       lookup = Day6.Grid.to_lookup(grid)
-      assert 16 == Day6.safe_region_size(lookup, 10_000)
+
+      assert 46_542 == Day6.safe_region_size(lookup, 10_000)
     end
   end
 
