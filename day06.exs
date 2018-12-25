@@ -1,5 +1,5 @@
 defmodule Day6 do
-  def largest_area(coordinates, size \\ 9) do
+  def largest_area(coordinates, size) do
     plot = Day6.Grid.plot_distance(coordinates, size)
 
     ignored = ignored_labels(plot)
@@ -41,7 +41,7 @@ defmodule Day6 do
 end
 
 defmodule Day6.Grid do
-  def plot(coordinates, size \\ 9) do
+  def plot(coordinates, size) do
     labels = labels_for(coordinates)
 
     for y <- 0..size do
@@ -52,7 +52,7 @@ defmodule Day6.Grid do
     end
   end
 
-  def plot_distance(coordinates, size \\ 9) do
+  def plot_distance(coordinates, size) do
     labels = labels_for(coordinates)
 
     for y <- 0..size do
@@ -74,7 +74,7 @@ defmodule Day6.Grid do
     end
   end
 
-  def manhattan_sums(coordinates, size \\ 9) do
+  def manhattan_sums(coordinates, size) do
     for y <- 0..size do
       for x <- 0..size do
         point = {x, y}
@@ -282,7 +282,7 @@ defmodule Day6Test do
         {8, 9}
       ]
 
-      assert {"E", 17} = Day6.largest_area(coordinates)
+      assert {"E", 17} = Day6.largest_area(coordinates, 9)
     end
 
     test "manhattan sum" do
@@ -295,7 +295,7 @@ defmodule Day6Test do
         {8, 9}
       ]
 
-      grid = Day6.Grid.manhattan_sums(coordinates)
+      grid = Day6.Grid.manhattan_sums(coordinates, 9)
       lookup = Day6.Grid.to_lookup(grid)
 
       IO.puts("\n")
