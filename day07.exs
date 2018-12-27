@@ -27,6 +27,36 @@ defmodule Day7 do
     |> Enum.uniq()
     |> Enum.reduce(requirements, &Map.put_new(&2, &1, []))
   end
+
+  def order(requirements) do
+    requirements
+    |> Stream.unfold(&run/1)
+    |> Enum.join()
+  end
+
+  def run(acc) do
+    case next_step(acc) do
+      nil -> nil
+      step -> {step, remove_step(acc, step)}
+    end
+  end
+
+  def next_step(requirements) do
+    requirements
+    |> Enum.find({nil, []}, &ready?/1)
+    |> elem(0)
+  end
+
+  def remove_step(requirements, to_remove) do
+    requirements
+    |> Enum.map(fn {step, deps} ->
+      {step, List.delete(deps, to_remove)}
+    end)
+    |> List.keydelete(to_remove, 0)
+  end
+
+  defp ready?({_step, []}), do: true
+  defp ready?({_step, _deps}), do: false
 end
 
 ExUnit.start(seed: 0, trace: true)
@@ -87,6 +117,22 @@ defmodule Day7Test do
         |> Day7.to_requirements()
 
       assert "CABDFE" == Day7.order(requirements)
+    end
+  end
+
+  describe "puzzle" do
+
+    test "order" do
+      requirements =
+        input()
+        |> Day7.parse()
+        |> Day7.to_requirements()
+
+      assert "PFKQWJSVUXEMNIHGTYDOZACRLB" == Day7.order(requirements)
+    end
+
+    def input() do
+      File.read!("day07.txt")
     end
   end
 end
