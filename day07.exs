@@ -59,6 +59,94 @@ defmodule Day7 do
   defp ready?({_step, _deps}), do: false
 end
 
+defmodule Day7b do
+  def processing_time(state) do
+    state.time
+  end
+
+  def new(requirements, opts) do
+    %{
+      requirements: requirements,
+      workers: Keyword.fetch!(opts, :workers),
+      base_duration: Keyword.fetch!(opts, :base_duration),
+      processing: %{},
+      processed: [],
+      time: 0
+    }
+  end
+
+  # { req: [], workers: [], }
+  # assign work
+  ## available_work
+  ## available_workers
+  # cost = 60 + letter_cost
+  # process_work
+  # tick
+  # leap to next boundary
+  #
+  def part2(initial) do
+    initial
+    |> Stream.unfold(&run/1)
+    |> Enum.take(2)
+  end
+
+  # next_steps -> ["C", "A", "F"]
+  # assign_work -> workers - 3, processing: %{"C" => 63, "A" => 61}
+  # process_work -> loop tick -> processing: %{"C" => 63 - 1, "A" => 61 - 1}
+  # tick -> time: time + 1
+  # process_work when processing: %{"C" == 0} -> processing: remove C, processed: ["C" | rest]
+  # cost("C", base_duration) -> base_duration + ?C - ?A + 1
+  # leap -> processing.values.min
+  def run(acc) do
+    case next_steps(acc) do
+      [] -> nil
+      # {step, remove_step(acc, step)}
+      steps -> {acc, do_steps(acc, steps)}
+    end
+
+    # |> IO.inspect()
+  end
+
+  def do_steps(state, steps) do
+    Enum.reduce(steps, state, fn step, state ->
+      state
+      |> assign_work(step)
+    end)
+  end
+
+  def assign_work(state, step) do
+    cost = cost(step, state.base_duration)
+
+    state
+    |> update_in([:workers], &(&1 - 1))
+    |> update_in([:processing], &Map.put(&1, step, cost))
+  end
+
+  def next_steps(state) do
+    available_steps(state)
+    |> Enum.take(state.workers)
+  end
+
+  def available_steps(state) do
+    state.requirements
+    |> Enum.filter(&ready?/1)
+    |> Enum.map(&elem(&1, 0))
+    |> IO.inspect(label: "available")
+  end
+
+  def remove_step(state, _step) do
+    state
+  end
+
+  defp cost(<<char>>, base) do
+    (base + char - ?A + 1)
+    |> IO.inspect(label: "cost(#{<<char>>})")
+  end
+
+  defp ready?({_step, []}), do: true
+  defp ready?({_step, _deps}), do: false
+end
+
 ExUnit.start(seed: 0, trace: true)
 
 defmodule Day7Test do
@@ -118,10 +206,21 @@ defmodule Day7Test do
 
       assert "CABDFE" == Day7.order(requirements)
     end
+
+    test "part 2" do
+      duration =
+        sample_input()
+        |> Day7.parse()
+        |> Day7.to_requirements()
+        |> Day7b.new(workers: 2, base_duration: 0)
+        |> Day7b.part2()
+        |> Day7b.processing_time()
+
+      assert 15 == duration
+    end
   end
 
   describe "puzzle" do
-
     test "order" do
       requirements =
         input()
@@ -131,8 +230,21 @@ defmodule Day7Test do
       assert "PFKQWJSVUXEMNIHGTYDOZACRLB" == Day7.order(requirements)
     end
 
+    test "part 2" do
+      duration =
+        input()
+        |> Day7.parse()
+        |> Day7.to_requirements()
+        |> Day7b.new(workers: 5, base_duration: 60)
+        |> Day7b.part2()
+        |> Day7b.processing_time()
+
+      assert 500 == duration
+    end
+
     def input() do
       File.read!("day07.txt")
+      |> String.trim_trailing("\n")
     end
   end
 end
