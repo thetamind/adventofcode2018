@@ -68,6 +68,7 @@ defmodule Day7b do
     %{
       requirements: requirements,
       workers: Keyword.fetch!(opts, :workers),
+      base_workers: Keyword.fetch!(opts, :workers),
       base_duration: Keyword.fetch!(opts, :base_duration),
       processing: %{},
       processed: [],
@@ -84,10 +85,38 @@ defmodule Day7b do
   # tick
   # leap to next boundary
   #
-  def part2(initial) do
+  def part2(state) do
+    steps = next_steps(state)
+
+    initial =
+      Enum.reduce(steps, state, fn step, state ->
+        assign_work(state, step)
+      end)
+
     initial
     |> Stream.unfold(&run/1)
-    |> Enum.take(2)
+    |> Stream.each(&inspect_state/1)
+    |> Enum.take(20)
+  end
+
+  def inspect_state(state) do
+    workers =
+      state.processing
+      |> Map.keys()
+      |> Stream.concat(Stream.cycle(["."]))
+      |> Enum.take(state.base_workers)
+      |> Enum.join("    ")
+
+    done = state.processed |> Enum.join()
+
+    if state.time == 0 do
+      workers = Enum.map(1..state.base_workers, &"#{&1}") |> Enum.join("    ")
+      header = "Second    #{workers}        Done"
+      IO.puts(header)
+    end
+
+    log = "#{state.time}         #{workers}        #{done}"
+    IO.puts(log)
   end
 
   # next_steps -> ["C", "A", "F"]
@@ -97,33 +126,82 @@ defmodule Day7b do
   # process_work when processing: %{"C" == 0} -> processing: remove C, processed: ["C" | rest]
   # cost("C", base_duration) -> base_duration + ?C - ?A + 1
   # leap -> processing.values.min
+  # def run(%{processing: processing}) when map_size(processing) == 0, do: nil
+
   def run(acc) do
-    case next_steps(acc) do
-      [] -> nil
-      # {step, remove_step(acc, step)}
-      steps -> {acc, do_steps(acc, steps)}
-    end
+    steps = next_steps(acc)
+    {acc, do_steps(acc, steps)}
 
     # |> IO.inspect()
   end
 
+  def increment_time(state) do
+    state
+    |> Map.update!(:time, &(&1 + 1))
+    |> update_in([:processing], &increment_processing_time/1)
+  end
+
+  defp increment_processing_time(processing) do
+    Map.new(processing, fn {k, v} -> {k, v - 1} end)
+  end
+
   def do_steps(state, steps) do
+    state
+    |> assign_work_steps(steps)
+    |> increment_time()
+    |> complete_work()
+  end
+
+  def assign_work_steps(state, steps) do
     Enum.reduce(steps, state, fn step, state ->
-      state
-      |> assign_work(step)
+      assign_work(state, step)
     end)
+  end
+
+  def steps_done(processing) do
+    # IO.inspect(processing, label: "steps_done")
+
+    processing
+    |> Enum.filter(fn {_step, remaining} -> remaining == 0 end)
+    |> Enum.map(&elem(&1, 0))
+  end
+
+  def complete_work(state) do
+    done = steps_done(state.processing)
+    # IO.inspect(done, label: "complete_work")
+
+    Enum.reduce(done, state, fn step, acc ->
+      acc
+      |> update_in([:requirements], &remove_step(&1, step))
+      |> update_in([:processing], &Map.delete(&1, step))
+    end)
+    |> update_in([:workers], &(&1 + Enum.count(done)))
+    |> update_in([:processed], &(&1 ++ done))
+  end
+
+  def remove_step(requirements, to_remove) do
+    # IO.inspect(to_remove, label: "Removing")
+
+    requirements
+    |> Enum.map(fn {step, deps} ->
+      {step, List.delete(deps, to_remove)}
+    end)
+    |> List.keydelete(to_remove, 0)
   end
 
   def assign_work(state, step) do
     cost = cost(step, state.base_duration)
+    # IO.inspect(step, label: "Assigning")
 
     state
     |> update_in([:workers], &(&1 - 1))
-    |> update_in([:processing], &Map.put(&1, step, cost))
+    |> update_in([:processing], &Map.put_new(&1, step, cost))
+    |> update_in([:requirements], &List.keydelete(&1, step, 0))
   end
 
   def next_steps(state) do
-    available_steps(state)
+    state
+    |> available_steps()
     |> Enum.take(state.workers)
   end
 
@@ -131,16 +209,11 @@ defmodule Day7b do
     state.requirements
     |> Enum.filter(&ready?/1)
     |> Enum.map(&elem(&1, 0))
-    |> IO.inspect(label: "available")
-  end
-
-  def remove_step(state, _step) do
-    state
+    # |> IO.inspect(label: "available")
   end
 
   defp cost(<<char>>, base) do
-    (base + char - ?A + 1)
-    |> IO.inspect(label: "cost(#{<<char>>})")
+    base + char - ?A + 1
   end
 
   defp ready?({_step, []}), do: true
@@ -213,8 +286,10 @@ defmodule Day7Test do
         |> Day7.parse()
         |> Day7.to_requirements()
         |> Day7b.new(workers: 2, base_duration: 0)
+        |> IO.inspect(label: "\n\n")
         |> Day7b.part2()
-        |> Day7b.processing_time()
+
+      # |> Day7b.processing_time()
 
       assert 15 == duration
     end
@@ -230,6 +305,7 @@ defmodule Day7Test do
       assert "PFKQWJSVUXEMNIHGTYDOZACRLB" == Day7.order(requirements)
     end
 
+    @tag skip: "soon"
     test "part 2" do
       duration =
         input()
@@ -237,7 +313,8 @@ defmodule Day7Test do
         |> Day7.to_requirements()
         |> Day7b.new(workers: 5, base_duration: 60)
         |> Day7b.part2()
-        |> Day7b.processing_time()
+
+      # |> Day7b.processing_time()
 
       assert 500 == duration
     end
