@@ -61,7 +61,7 @@ end
 
 defmodule Day7b do
   def processing_time(state) do
-    state.time
+    state.time + 2
   end
 
   def new(requirements, opts) do
@@ -72,7 +72,7 @@ defmodule Day7b do
       base_duration: Keyword.fetch!(opts, :base_duration),
       processing: %{},
       processed: [],
-      time: 0
+      time: -1
     }
   end
 
@@ -86,17 +86,10 @@ defmodule Day7b do
   # leap to next boundary
   #
   def part2(state) do
-    steps = next_steps(state)
-
-    initial =
-      Enum.reduce(steps, state, fn step, state ->
-        assign_work(state, step)
-      end)
-
-    initial
+    state
     |> Stream.unfold(&run/1)
-    |> Stream.each(&inspect_state/1)
-    |> Enum.take(20)
+    |> Stream.drop(1)
+    |> Enum.to_list()
   end
 
   def inspect_state(state) do
@@ -115,9 +108,18 @@ defmodule Day7b do
       IO.puts(header)
     end
 
-    log = "#{state.time}         #{workers}        #{done}"
+    log = "#{String.pad_leading(to_string(state.time), 4)}\t#{workers}\t#{done}"
     IO.puts(log)
+
+    state
   end
+
+  # JEG2
+  # add_work -> available = deps - waiting - working
+  # assign_work -> workers = step => seconds + 61
+  # work -> workers - leap_seconds; seconds + leap_seconds
+  # finish_work -> finished = workers.0; remove workers; drop deps
+  # repeat
 
   # next_steps -> ["C", "A", "F"]
   # assign_work -> workers - 3, processing: %{"C" => 63, "A" => 61}
@@ -126,29 +128,19 @@ defmodule Day7b do
   # process_work when processing: %{"C" == 0} -> processing: remove C, processed: ["C" | rest]
   # cost("C", base_duration) -> base_duration + ?C - ?A + 1
   # leap -> processing.values.min
-  # def run(%{processing: processing}) when map_size(processing) == 0, do: nil
+  def run(%{processing: processing, requirements: requirements})
+      when map_size(processing) == 0 and length(requirements) == 0,
+      do: nil
 
   def run(acc) do
-    steps = next_steps(acc)
-    {acc, do_steps(acc, steps)}
-
-    # |> IO.inspect()
-  end
-
-  def increment_time(state) do
-    state
-    |> Map.update!(:time, &(&1 + 1))
-    |> update_in([:processing], &increment_processing_time/1)
-  end
-
-  defp increment_processing_time(processing) do
-    Map.new(processing, fn {k, v} -> {k, v - 1} end)
+    {acc, do_steps(acc, next_steps(acc))}
   end
 
   def do_steps(state, steps) do
     state
     |> assign_work_steps(steps)
     |> increment_time()
+    |> inspect_state()
     |> complete_work()
   end
 
@@ -156,6 +148,12 @@ defmodule Day7b do
     Enum.reduce(steps, state, fn step, state ->
       assign_work(state, step)
     end)
+  end
+
+  def increment_time(state) do
+    state
+    |> Map.update!(:time, &(&1 + 1))
+    |> update_in([:processing], &Map.new(&1, fn {k, v} -> {k, v - 1} end))
   end
 
   def steps_done(processing) do
@@ -168,7 +166,7 @@ defmodule Day7b do
 
   def complete_work(state) do
     done = steps_done(state.processing)
-    # IO.inspect(done, label: "complete_work")
+    # if length(done) > 0, do: IO.inspect(done, label: "complete_work")
 
     Enum.reduce(done, state, fn step, acc ->
       acc
@@ -209,6 +207,7 @@ defmodule Day7b do
     state.requirements
     |> Enum.filter(&ready?/1)
     |> Enum.map(&elem(&1, 0))
+
     # |> IO.inspect(label: "available")
   end
 
@@ -281,7 +280,7 @@ defmodule Day7Test do
     end
 
     test "part 2" do
-      duration =
+      log =
         sample_input()
         |> Day7.parse()
         |> Day7.to_requirements()
@@ -289,7 +288,10 @@ defmodule Day7Test do
         |> IO.inspect(label: "\n\n")
         |> Day7b.part2()
 
-      # |> Day7b.processing_time()
+      duration =
+        log
+        |> List.last()
+        |> Day7b.processing_time()
 
       assert 15 == duration
     end
@@ -305,18 +307,21 @@ defmodule Day7Test do
       assert "PFKQWJSVUXEMNIHGTYDOZACRLB" == Day7.order(requirements)
     end
 
-    @tag skip: "soon"
     test "part 2" do
-      duration =
+      log =
         input()
         |> Day7.parse()
         |> Day7.to_requirements()
         |> Day7b.new(workers: 5, base_duration: 60)
+        |> IO.inspect(label: "\n\n")
         |> Day7b.part2()
 
-      # |> Day7b.processing_time()
+      duration =
+        log
+        |> List.last()
+        |> Day7b.processing_time()
 
-      assert 500 == duration
+      assert 864 == duration
     end
 
     def input() do
