@@ -61,7 +61,7 @@ end
 
 defmodule Day7b do
   def processing_time(state) do
-    state.time + 2
+    state.time + 1
   end
 
   def new(requirements, opts) do
@@ -104,7 +104,7 @@ defmodule Day7b do
 
     if state.time == 0 do
       workers = Enum.map(1..state.base_workers, &"#{&1}") |> Enum.join("    ")
-      header = "Second    #{workers}        Done"
+      header = "\nSecond\t#{workers}\tDone"
       IO.puts(header)
     end
 
@@ -133,7 +133,8 @@ defmodule Day7b do
       do: nil
 
   def run(acc) do
-    {acc, do_steps(acc, next_steps(acc))}
+    state = do_steps(acc, next_steps(acc))
+    {state, state}
   end
 
   def do_steps(state, steps) do
@@ -157,8 +158,6 @@ defmodule Day7b do
   end
 
   def steps_done(processing) do
-    # IO.inspect(processing, label: "steps_done")
-
     processing
     |> Enum.filter(fn {_step, remaining} -> remaining == 0 end)
     |> Enum.map(&elem(&1, 0))
@@ -166,7 +165,6 @@ defmodule Day7b do
 
   def complete_work(state) do
     done = steps_done(state.processing)
-    # if length(done) > 0, do: IO.inspect(done, label: "complete_work")
 
     Enum.reduce(done, state, fn step, acc ->
       acc
@@ -178,8 +176,6 @@ defmodule Day7b do
   end
 
   def remove_step(requirements, to_remove) do
-    # IO.inspect(to_remove, label: "Removing")
-
     requirements
     |> Enum.map(fn {step, deps} ->
       {step, List.delete(deps, to_remove)}
@@ -189,7 +185,6 @@ defmodule Day7b do
 
   def assign_work(state, step) do
     cost = cost(step, state.base_duration)
-    # IO.inspect(step, label: "Assigning")
 
     state
     |> update_in([:workers], &(&1 - 1))
@@ -207,8 +202,6 @@ defmodule Day7b do
     state.requirements
     |> Enum.filter(&ready?/1)
     |> Enum.map(&elem(&1, 0))
-
-    # |> IO.inspect(label: "available")
   end
 
   defp cost(<<char>>, base) do
@@ -285,7 +278,6 @@ defmodule Day7Test do
         |> Day7.parse()
         |> Day7.to_requirements()
         |> Day7b.new(workers: 2, base_duration: 0)
-        |> IO.inspect(label: "\n\n")
         |> Day7b.part2()
 
       duration =
@@ -313,7 +305,6 @@ defmodule Day7Test do
         |> Day7.parse()
         |> Day7.to_requirements()
         |> Day7b.new(workers: 5, base_duration: 60)
-        |> IO.inspect(label: "\n\n")
         |> Day7b.part2()
 
       duration =
