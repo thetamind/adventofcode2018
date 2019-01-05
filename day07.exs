@@ -76,20 +76,19 @@ defmodule Day7b do
     }
   end
 
-  # { req: [], workers: [], }
-  # assign work
-  ## available_work
-  ## available_workers
-  # cost = 60 + letter_cost
-  # process_work
-  # tick
-  # leap to next boundary
-  #
   def part2(state) do
+    inspect_header(state)
+
     state
     |> Stream.unfold(&run/1)
-    |> Stream.drop(1)
     |> Enum.to_list()
+  end
+
+  def inspect_header(state) do
+    Process.sleep(20)
+    workers = Enum.map(1..state.base_workers, &"#{&1}") |> Enum.join("    ")
+    header = "\nSecond\t#{workers}\tDone"
+    IO.puts(header)
   end
 
   def inspect_state(state) do
@@ -101,12 +100,6 @@ defmodule Day7b do
       |> Enum.join("    ")
 
     done = state.processed |> Enum.join()
-
-    if state.time == 0 do
-      workers = Enum.map(1..state.base_workers, &"#{&1}") |> Enum.join("    ")
-      header = "\nSecond\t#{workers}\tDone"
-      IO.puts(header)
-    end
 
     log = "#{String.pad_leading(to_string(state.time), 4)}\t#{workers}\t#{done}"
     IO.puts(log)
@@ -152,9 +145,11 @@ defmodule Day7b do
   end
 
   def increment_time(state) do
+    {_step, leap} = Enum.min_by(state.processing, &elem(&1, 1), fn -> 1 end)
+
     state
-    |> Map.update!(:time, &(&1 + 1))
-    |> update_in([:processing], &Map.new(&1, fn {k, v} -> {k, v - 1} end))
+    |> Map.update!(:time, &(&1 + leap))
+    |> update_in([:processing], &Map.new(&1, fn {k, v} -> {k, v - leap} end))
   end
 
   def steps_done(processing) do
