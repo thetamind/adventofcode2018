@@ -22,12 +22,15 @@ defmodule Day8.Node do
   end
 
   def meta_maximum(%__MODULE__{children: children, meta: meta}) do
-    max_children =
-      Enum.reduce(children, 0, fn child, acc ->
-        max(acc, meta_maximum(child))
-      end)
+    Enum.reduce(children, Enum.max(meta), fn child, acc ->
+      max(acc, meta_maximum(child))
+    end)
+  end
 
-    max(max_children, Enum.max(meta))
+  def meta_sum(%__MODULE__{children: children, meta: meta}) do
+    Enum.reduce(children, Enum.sum(meta), fn child, acc ->
+      acc + meta_sum(child)
+    end)
   end
 end
 
@@ -79,6 +82,10 @@ defmodule Day8.NodeTest do
 
     test "meta_maximum" do
       assert 99 == Node.meta_maximum(sample_tree())
+    end
+
+    test "meta_sum" do
+      assert 138 == Node.meta_sum(sample_tree())
     end
   end
 
