@@ -32,6 +32,10 @@ defmodule Day8.Node do
       acc + meta_sum(child)
     end)
   end
+
+  def equal?(%__MODULE__{} = left, %__MODULE__{} = right) do
+    left === right
+  end
 end
 
 defmodule Day8 do
@@ -52,10 +56,6 @@ defmodule Day8 do
     meta = 0..meta_count |> Enum.to_list()
     Node.new(children, meta)
   end
-
-  def meta_sum(tree) do
-    tree
-  end
 end
 
 ExUnit.start(seed: 0, trace: true)
@@ -65,28 +65,40 @@ defmodule Day8.NodeTest do
 
   alias Day8.Node
 
-  describe "new" do
-    test "children" do
-      meta =
-        sample_tree()
-        |> Node.child(1)
-        |> Node.child(0)
-        |> Node.meta()
+  test "children" do
+    meta =
+      sample_tree()
+      |> Node.child(1)
+      |> Node.child(0)
+      |> Node.meta()
 
-      assert [99] == meta
-    end
+    assert [99] == meta
+  end
 
-    test "tree_size" do
-      assert 4 == Node.tree_size(sample_tree())
-    end
+  test "tree_size" do
+    assert 4 == Node.tree_size(sample_tree())
+  end
 
-    test "meta_maximum" do
-      assert 99 == Node.meta_maximum(sample_tree())
-    end
+  test "meta_maximum" do
+    assert 99 == Node.meta_maximum(sample_tree())
+  end
 
-    test "meta_sum" do
-      assert 138 == Node.meta_sum(sample_tree())
-    end
+  test "meta_sum" do
+    assert 138 == Node.meta_sum(sample_tree())
+  end
+
+  test "equal?" do
+    refute Node.equal?(sample_tree(), little_tree())
+    assert Node.equal?(sample_tree(), sample_tree())
+  end
+
+  def little_tree do
+    Node.new(
+      [
+        Node.new([], [5, 10])
+      ],
+      [3, 2, 1]
+    )
   end
 
   def sample_tree do
@@ -112,10 +124,8 @@ defmodule Day8Test do
     test "metadata sum" do
       data = Day8.parse(sample_input())
       tree = Day8.to_tree(data)
-      assert 138 == Day8.meta_sum(tree)
+      assert 138 == Day8.Node.meta_sum(tree)
     end
-
-    test "root"
   end
 
   def sample_input do
