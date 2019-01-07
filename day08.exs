@@ -33,6 +33,19 @@ defmodule Day8.Node do
     end)
   end
 
+  def check2(%__MODULE__{children: [], meta: meta}) do
+    Enum.sum(meta)
+  end
+
+  def check2(%__MODULE__{children: children, meta: meta}) do
+    Enum.reduce(meta, 0, fn idx, acc ->
+      case Enum.at(children, idx - 1) do
+        nil -> acc
+        child -> acc + check2(child)
+      end
+    end)
+  end
+
   def equal?(%__MODULE__{} = left, %__MODULE__{} = right) do
     left === right
   end
@@ -158,6 +171,20 @@ defmodule Day8Test do
       data = Day8.parse(puzzle_input())
       tree = Day8.to_tree(data)
       assert 45_865 == Day8.Node.meta_sum(tree)
+    end
+  end
+
+  describe "part 2" do
+    test "sample" do
+      data = Day8.parse(sample_input())
+      tree = Day8.to_tree(data)
+      assert 66 == Day8.Node.check2(tree)
+    end
+
+    test "puzzle" do
+      data = Day8.parse(puzzle_input())
+      tree = Day8.to_tree(data)
+      assert 22_608 == Day8.Node.check2(tree)
     end
   end
 
