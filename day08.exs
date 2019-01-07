@@ -48,39 +48,30 @@ defmodule Day8 do
   end
 
   def to_tree(data) do
-    read_tree(data)
+    {tree, _} = read_tree(data)
+    tree
   end
 
-  # 2/3
-  # 0 / 3
-
   def read_tree([child_count | [meta_count | tail]]) do
-    IO.puts("HEADER: #{child_count} / #{meta_count}")
-    IO.inspect(tail, charlists: :as_lists)
     {children, rest} = read_children(tail, child_count)
     {meta, rest} = read_metadata(rest, meta_count)
+
     {Node.new(children, meta), rest}
   end
 
   def read_children(input, 0) do
-    IO.puts("WANT #{0} children")
     {[], input}
   end
 
   def read_children(input, count) do
-    IO.puts("WANT #{count} children")
-
-    Enum.reduce(0..(count - 1), {[], input}, fn i, {children, input} ->
-      IO.puts("#{i}")
+    Enum.reduce(0..(count - 1), {[], input}, fn _, {children, input} ->
       {node, input} = read_tree(input)
       {children ++ [node], input}
     end)
-    |> IO.inspect(label: "read_child")
   end
 
   def read_metadata(input, count) do
     {meta, rest} = Enum.split(input, count)
-    IO.puts("META: #{Enum.join(meta, ", ")}")
 
     {meta, rest}
   end
@@ -166,8 +157,7 @@ defmodule Day8Test do
     test "puzzle metadata sum" do
       data = Day8.parse(puzzle_input())
       tree = Day8.to_tree(data)
-      IO.inspect(tree, label: "tree")
-      assert 10 == Day8.Node.meta_sum(tree)
+      assert 45_865 == Day8.Node.meta_sum(tree)
     end
   end
 
