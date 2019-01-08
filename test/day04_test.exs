@@ -1,4 +1,3 @@
-
 defmodule Day4Test do
   use ExUnit.Case, async: true
 
@@ -170,7 +169,7 @@ defmodule Day4Test do
     end
 
     def puzzle_input do
-      File.read!("day04.txt")
+      File.read!("priv/day04.txt")
     end
   end
 end

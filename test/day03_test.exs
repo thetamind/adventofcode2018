@@ -1,4 +1,3 @@
-
 defmodule Day03Test do
   use ExUnit.Case, async: true
 
@@ -69,7 +68,7 @@ defmodule Day03Test do
     end
 
     defp puzzle_input() do
-      File.read!("day03.txt")
+      File.read!("priv/day03.txt")
       |> String.split("\n", trim: true)
     end
   end

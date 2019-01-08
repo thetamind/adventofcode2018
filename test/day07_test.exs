@@ -1,4 +1,3 @@
-
 defmodule Day7Test do
   use ExUnit.Case, async: true
 
@@ -101,7 +100,7 @@ defmodule Day7Test do
     end
 
     def input() do
-      File.read!("day07.txt")
+      File.read!("priv/day07.txt")
       |> String.trim_trailing("\n")
     end
   end

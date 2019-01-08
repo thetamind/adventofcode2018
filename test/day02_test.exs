@@ -1,4 +1,3 @@
-
 defmodule Day02Test do
   use ExUnit.Case, async: true
 
@@ -24,7 +23,7 @@ defmodule Day02Test do
 
   test "puzzle" do
     ids =
-      File.read!("day02.txt")
+      File.read!("priv/day02.txt")
       |> String.split("\n", trim: true)
 
     assert 5434 == Day02.checksum(ids)
@@ -33,7 +32,7 @@ defmodule Day02Test do
   describe "part 2" do
     test "puzzle" do
       ids =
-        File.read!("day02.txt")
+        File.read!("priv/day02.txt")
         |> String.split("\n", trim: true)
 
       assert "agimdjvlhedpsyoqfzuknpjwt" == Day02.part2(ids)

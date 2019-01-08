@@ -9,7 +9,7 @@ defmodule Day01Test do
 
   test "puzzle" do
     input =
-      File.read!("day01.txt")
+      File.read!("priv/day01.txt")
       |> String.split("\n", trim: true)
       |> Enum.join(", ")
 
@@ -25,7 +25,7 @@ defmodule Day01Test do
 
   test "part 2 puzzle" do
     input =
-      File.read!("day01.txt")
+      File.read!("priv/day01.txt")
       |> String.split("\n", trim: true)
       |> Enum.join(", ")
 

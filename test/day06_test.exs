@@ -1,4 +1,3 @@
-
 defmodule Day6Test do
   use ExUnit.Case, async: true
 
@@ -110,7 +109,7 @@ defmodule Day6Test do
   describe "puzzle" do
     test "largest area" do
       coordinates =
-        File.read!("day06.txt")
+        File.read!("priv/day06.txt")
         |> String.split("\n", trim: true)
         |> Enum.map(&parse_coordinate/1)
 
@@ -124,7 +123,7 @@ defmodule Day6Test do
 
     test "manhattan sum" do
       coordinates =
-        File.read!("day06.txt")
+        File.read!("priv/day06.txt")
         |> String.split("\n", trim: true)
         |> Enum.map(&parse_coordinate/1)
 

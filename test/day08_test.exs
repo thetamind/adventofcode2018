@@ -1,4 +1,3 @@
-
 defmodule Day8.NodeTest do
   use ExUnit.Case, async: true
 
@@ -115,7 +114,7 @@ defmodule Day8Test do
   end
 
   def puzzle_input do
-    File.read!("day08.txt")
+    File.read!("priv/day08.txt")
     |> String.trim_trailing("\n")
   end
 end

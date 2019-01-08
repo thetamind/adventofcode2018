@@ -1,4 +1,3 @@
-
 defmodule Day5Test do
   use ExUnit.Case, async: true
 
@@ -34,17 +33,17 @@ defmodule Day5Test do
 
   describe "puzzle" do
     test "polymer reaction shrinks matching pairs" do
-      input = File.read!("day05.txt") |> String.trim_trailing("\n")
+      input = File.read!("priv/day05.txt") |> String.trim_trailing("\n")
       assert 11720 == Day5.shrink(input) |> String.length()
     end
 
     test "determine which type to remove to produce shortest polymer" do
-      input = File.read!("day05.txt") |> String.trim_trailing("\n")
+      input = File.read!("priv/day05.txt") |> String.trim_trailing("\n")
       assert {"w", 4956, _} = Day5.part2(input)
     end
 
     test "concurrently determine which type to remove to produce shortest polymer" do
-      input = File.read!("day05.txt") |> String.trim_trailing("\n")
+      input = File.read!("priv/day05.txt") |> String.trim_trailing("\n")
       assert {"w", 4956, _} = Day5.concurrent_part2(input)
     end
   end
