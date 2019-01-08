@@ -12,9 +12,7 @@ defmodule AOC2018.MixProject do
         flags: [:unmatched_returns, :error_handling, :race_conditions, :underspecs],
         plt_add_deps: :apps_direct,
         plt_add_apps: []
-      ],
-      test_paths: ["."],
-      test_pattern: "day*.{ex,exs}"
+      ]
     ]
   end
 
