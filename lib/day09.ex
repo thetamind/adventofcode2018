@@ -1,5 +1,18 @@
 defmodule Day9 do
   alias __MODULE__.Circle
+
+  defstruct circle: nil, current_player: 0, num_players: 0
+
+  def new(num_players) do
+    %__MODULE__{
+      circle: Circle.new([0], num_players: num_players)
+    }
+  end
+  def play(num_players, last_marble) do
+    Enum.reduce(1..last_marble, new(num_players), &take_turn(&2, &1))
+  end
+
+  def take_turn(game, marble)
 end
 
 defmodule Day9.Circle do

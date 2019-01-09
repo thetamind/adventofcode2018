@@ -1,17 +1,27 @@
 defmodule Day9Test do
   use ExUnit.Case, async: true
 
-  test "me", %{sample: sample} do
-    assert sample
+  test "examples", %{examples: examples} do
+    Enum.map(examples, fn example ->
+      assert example.score == Day9.play(example.players, example.marble)
+    end)
   end
 
   setup_all do
-    [sample: sample_input()]
+    [examples: example_input()]
   end
 
-  def sample_input do
-    "9 players; last marble is worth 25 points: high score is 32"
-    |> parse()
+  def example_input do
+    [
+      "9 players; last marble is worth 25 points: high score is 32",
+      "10 players; last marble is worth 1618 points: high score is 8317",
+      "13 players; last marble is worth 7999 points: high score is 146373",
+      "17 players; last marble is worth 1104 points: high score is 2764",
+      "21 players; last marble is worth 6111 points: high score is 54718",
+      "30 players; last marble is worth 5807 points: high score is 37305"
+    ]
+    |> Enum.map(&parse/1)
+    |> IO.inspect()
   end
 
   def parse(line) do
