@@ -1,5 +1,26 @@
 defmodule Day9Test do
   use ExUnit.Case, async: true
+
+  test "me", %{sample: sample} do
+    assert sample
+  end
+
+  setup_all do
+    [sample: sample_input()]
+  end
+
+  def sample_input do
+    "9 players; last marble is worth 25 points: high score is 32"
+    |> parse()
+  end
+
+  def parse(line) do
+    pattern =
+      ~r/(?<players>\d+) players; last marble is worth (?<marble>\d+) points: high score is (?<score>\d+)/
+
+    Regex.named_captures(pattern, line)
+    |> Enum.into(%{}, fn {k, v} -> {String.to_atom(k), String.to_integer(v)} end)
+  end
 end
 
 defmodule Day9.CircleTest do

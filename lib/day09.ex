@@ -1,4 +1,5 @@
 defmodule Day9 do
+  alias __MODULE__.Circle
 end
 
 defmodule Day9.Circle do
