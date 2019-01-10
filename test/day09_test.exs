@@ -1,14 +1,53 @@
 defmodule Day9Test do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
+
+  @moduletag timeout: 500
+
+  setup_all do
+    [examples: example_input(), puzzle: puzzle_input()]
+  end
+
+  describe "take_turn" do
+    test "place marble" do
+      game =
+        Day9.new(9)
+        |> Day9.take_turn(1)
+
+      assert {1, [0, 1]} = Day9.inspect_circle(game)
+
+      game = Day9.take_turn(game, 2)
+      assert {2, [0, 2, 1]} = Day9.inspect_circle(game)
+    end
+
+    test "place marble multiple of 23"
+  end
+
+  describe "next_player" do
+    test "increment player" do
+      stream = Stream.iterate(Day9.new(3), &Day9.next_player/1)
+
+      assert 0 == Enum.fetch!(stream, 0) |> Map.get(:current_player)
+      assert 1 == Enum.fetch!(stream, 1) |> Map.get(:current_player)
+      assert 2 == Enum.fetch!(stream, 2) |> Map.get(:current_player)
+      assert 0 == Enum.fetch!(stream, 3) |> Map.get(:current_player)
+      assert 1 == Enum.fetch!(stream, 4) |> Map.get(:current_player)
+    end
+  end
 
   test "examples", %{examples: examples} do
     Enum.map(examples, fn example ->
-      assert example.score == Day9.play(example.players, example.marble)
+      assert example.score ==
+               Day9.play(example.players, example.marble)
+               |> IO.inspect(label: "after_play")
+               |> Day9.highest_score()
     end)
   end
 
-  setup_all do
-    [examples: example_input()]
+  @tag skip: ""
+  test "puzzle", %{puzzle: puzzle} do
+    assert -1 ==
+             Day9.play(puzzle.players, puzzle.marble)
+             |> Day9.highest_score()
   end
 
   def example_input do
@@ -21,20 +60,26 @@ defmodule Day9Test do
       "30 players; last marble is worth 5807 points: high score is 37305"
     ]
     |> Enum.map(&parse/1)
-    |> IO.inspect()
+  end
+
+  def puzzle_input() do
+    File.read!("priv/day09.txt")
+    |> String.trim_trailing("\n")
+    |> parse()
   end
 
   def parse(line) do
     pattern =
-      ~r/(?<players>\d+) players; last marble is worth (?<marble>\d+) points: high score is (?<score>\d+)/
+      ~r/(?<players>\d+) players; last marble is worth (?<marble>\d+) points(: high score is (?<score>\d+))?/
 
     Regex.named_captures(pattern, line)
+    |> Enum.reject(fn {_, v} -> v == "" end)
     |> Enum.into(%{}, fn {k, v} -> {String.to_atom(k), String.to_integer(v)} end)
   end
 end
 
 defmodule Day9.CircleTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Day9.Circle
 
@@ -84,6 +129,16 @@ defmodule Day9.CircleTest do
     end
   end
 
+  describe "peek" do
+    test "peek" do
+      circle = Circle.new([0, 1, 2, 3])
+      assert 0 == circle |> Circle.peek()
+      assert 1 == circle |> Circle.next() |> Circle.peek()
+      assert 3 == circle |> Circle.prev() |> Circle.peek()
+      assert 2 == circle |> Circle.prev() |> Circle.prev() |> Circle.peek()
+    end
+  end
+
   describe "insert" do
     test "insert" do
       circle =
@@ -93,6 +148,14 @@ defmodule Day9.CircleTest do
         |> Circle.insert(99)
 
       assert {99, _} = Circle.pop(circle)
+    end
+  end
+
+  @tag timeout: 500
+  describe "to_list" do
+    test "to_list" do
+      circle = Circle.new([0, 1, 2, 3]) |> Circle.prev()
+      assert [0, 1, 2, 3] = Circle.to_list(circle)
     end
   end
 end
