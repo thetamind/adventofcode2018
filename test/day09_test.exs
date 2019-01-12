@@ -1,7 +1,7 @@
 defmodule Day9Test do
   use ExUnit.Case, async: false
 
-  @moduletag timeout: 500
+  @moduletag timeout: 10_000
 
   setup_all do
     [examples: example_input(), puzzle: puzzle_input()]
@@ -58,6 +58,12 @@ defmodule Day9Test do
   test "puzzle", %{puzzle: puzzle} do
     assert 422_748 ==
              Day9.play(puzzle.players, puzzle.marble)
+             |> Day9.highest_score()
+  end
+
+  test "part 2 puzzle", %{puzzle: puzzle} do
+    assert 3_412_522_480 ==
+             Day9.play(puzzle.players, puzzle.marble * 100)
              |> Day9.highest_score()
   end
 
