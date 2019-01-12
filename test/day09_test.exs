@@ -19,7 +19,20 @@ defmodule Day9Test do
       assert {2, [0, 2, 1]} = Day9.inspect_circle(game)
     end
 
-    test "place marble multiple of 23"
+    test "place marble multiple of 23" do
+      game = Day9.play(9, 22)
+
+      assert {22,
+              [0, 16, 8, 17, 4, 18, 9, 19, 2, 20, 10, 21, 5, 22, 11, 1, 12, 6, 13, 3, 14, 7, 15]} ==
+               Day9.inspect_circle(game)
+
+      game = Day9.take_turn(game, 23)
+
+      assert {19, [0, 16, 8, 17, 4, 18, 19, 2, 20, 10, 21, 5, 22, 11, 1, 12, 6, 13, 3, 14, 7, 15]} ==
+               Day9.inspect_circle(game)
+
+      assert 32 == Day9.player_score(game, 5)
+    end
   end
 
   describe "next_player" do
@@ -38,14 +51,12 @@ defmodule Day9Test do
     Enum.map(examples, fn example ->
       assert example.score ==
                Day9.play(example.players, example.marble)
-               |> IO.inspect(label: "after_play")
                |> Day9.highest_score()
     end)
   end
 
-  @tag skip: ""
   test "puzzle", %{puzzle: puzzle} do
-    assert -1 ==
+    assert 422_748 ==
              Day9.play(puzzle.players, puzzle.marble)
              |> Day9.highest_score()
   end
