@@ -4,15 +4,36 @@ defmodule Day10Test do
   @moduletag timeout: 10_000
 
   setup_all do
-    [examples: example_input(), puzzle: puzzle_input()]
+    [example: example_input(), puzzle: puzzle_input()]
   end
 
-  test "examples", %{examples: examples} do
-    assert %{px: 7, py: 0, vx: -1, vy: 0} == examples |> Enum.fetch!(1)
+  describe "parse/1" do
+    test "example into position and velocity", %{example: example} do
+      assert %{px: 7, py: 0, vx: -1, vy: 0} == example |> Enum.fetch!(1)
+    end
+
+    test "puzzle into position and velocity", %{puzzle: puzzle} do
+      assert %{px: -9855, py: -9873, vx: 1, vy: 1} == puzzle |> Enum.fetch!(1)
+    end
   end
 
-  test "puzzle", %{puzzle: puzzle} do
-    assert %{px: -9855, py: -9873, vx: 1, vy: 1} == puzzle |> Enum.fetch!(1)
+  describe "light_at/2" do
+    test "fetch light from sky at coordinate", %{example: example} do
+      sky = Day10.to_sky(example)
+      assert Day10.light_at(sky, {-4, 3})
+      refute Day10.light_at(sky, {10, 10})
+    end
+  end
+
+  describe "light_stream/1" do
+    test "stream of light points over time", %{example: example} do
+      sky =
+        example
+        |> Day10.light_stream()
+        |> Enum.fetch!(3)
+
+      assert Day10.light_at(sky, {8, 5})
+    end
   end
 
   def example_input do
@@ -49,6 +70,7 @@ defmodule Day10Test do
     position=<14,  7> velocity=<-2,  0>
     position=<-3,  6> velocity=< 2, -1>
     """
+    |> String.trim_trailing("\n")
     |> String.split("\n")
     |> Day10.parse()
   end
