@@ -33,6 +33,63 @@ defmodule Day10Test do
         |> Enum.fetch!(3)
 
       assert Day10.light_at(sky, {8, 5})
+      refute Day10.light_at(sky, {5, 5})
+    end
+
+    test "puzzle stream of light points over time", %{puzzle: puzzle} do
+      sky =
+        puzzle
+        |> Day10.light_stream()
+        |> Enum.fetch!(3_000)
+
+      assert Day10.light_at(sky, {0, 0})
+    end
+  end
+
+  import ExUnit.CaptureIO
+
+  describe "print_sky/1" do
+    test "puts stream of light points over time", %{example: example} do
+      plot =
+        example
+        |> Day10.light_stream()
+        |> Enum.fetch!(3)
+        |> Day10.print_sky()
+
+      IO.puts(plot)
+    end
+
+    test "stream of light points over time", %{example: example} do
+      print = fn ->
+        plot =
+          example
+          |> Day10.light_stream()
+          |> Enum.fetch!(3)
+          |> Day10.print_sky()
+
+        IO.puts(plot)
+      end
+
+      expected = """
+      ......................
+      ......................
+      ......................
+      ......................
+      ......#...#..###......
+      ......#...#...#.......
+      ......#...#...#.......
+      ......#####...#.......
+      ......#...#...#.......
+      ......#...#...#.......
+      ......#...#...#.......
+      ......#...#..###......
+      ......................
+      ......................
+      ......................
+      ......................
+      """
+
+      assert capture_io(print) == expected
     end
   end
 
