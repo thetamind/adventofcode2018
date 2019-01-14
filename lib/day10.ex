@@ -35,24 +35,23 @@ defmodule Day10 do
     %{px: px + vx, py: py + vy, vx: vx, vy: vy}
   end
 
-  def print_sky(sky) do
+  def print_sky(sky, extents) do
     points = MapSet.new(sky, fn %{px: px, py: py} -> {px, py} end)
 
-    plot(points, 12)
+    plot(points, extents)
     |> puts()
-
   end
 
   def puts(plot) do
     plot
     |> Enum.map(&Enum.join(&1))
     |> Enum.join("\n")
+    |> IO.puts()
   end
 
-  def plot(lights, size) do
-
-    for y <- 0..size do
-      for x <- 0..size do
+  def plot(lights, {left, right, top, bottom}) do
+    for y <- top..bottom do
+      for x <- left..right do
         point = {x, y}
         if Enum.member?(lights, point), do: "#", else: "."
       end
