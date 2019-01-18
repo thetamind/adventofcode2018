@@ -57,4 +57,29 @@ defmodule Day10 do
       end
     end
   end
+
+  def extents(sky) do
+    sky
+    |> MapSet.new(fn %{px: px, py: py} -> {px, py} end)
+    |> Enum.reduce({0, 0, 0, 0}, fn {x, y}, {xmin, xmax, ymin, ymax} ->
+      {min(x, xmin), max(x, xmax), min(y, ymin), max(y, ymax)}
+    end)
+  end
+
+  def magnitude ({left, right, top, bottom}) do
+{right - left, top - bottom}
+  end
+
+  def find_message(light_stream) do
+    light_stream
+    |> Stream.with_index()
+    |> Stream.each(fn {_, second} -> IO.puts("#{second}") end)
+    |> Stream.filter(fn {sky, _second} ->
+      Enum.all?(sky, fn %{px: px, py: py} ->
+        px >= 0 and py >= 0
+      end)
+    end)
+    |> Enum.take(1)
+    |> Enum.at(0)
+  end
 end

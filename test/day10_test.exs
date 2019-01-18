@@ -50,7 +50,7 @@ defmodule Day10Test do
   import ExUnit.CaptureIO
 
   describe "print_sky/1" do
-    test "stream of light points over time", %{example: example} do
+    test "plot light points", %{example: example} do
       print = fn ->
         example
         |> Day10.light_stream()
@@ -78,6 +78,48 @@ defmodule Day10Test do
       """
 
       assert expected == capture_io(print)
+    end
+
+    @tag capture_log: true
+    test "puzzle plot light points", %{puzzle: puzzle} do
+      extents = Day10.extents(puzzle)
+      IO.inspect(extents, label: "extents")
+      extents = {50_160, 50_220, -29_880, -29_910}
+      IO.inspect(extents, label: "extents override")
+      Day10.print_sky(puzzle, extents)
+    end
+  end
+
+  describe "find_message/1" do
+    test "example", %{example: example} do
+      {sky, second} =
+        example
+        |> Day10.light_stream()
+        |> Day10.find_message()
+
+      assert 3 == second
+      assert Day10.light_at(sky, {8, 5})
+      refute Day10.light_at(sky, {5, 5})
+    end
+
+    @tag timeout: 500
+    test "puzzle", %{puzzle: puzzle} do
+      extents = Day10.extents(puzzle)
+      IO.inspect(extents, label: "extents")
+
+      {sky, second} =
+        puzzle
+        |> Day10.light_stream()
+        # |> Stream.with_index()
+        # |> Stream.each(fn {sky, second} ->
+        #   IO.puts("#{second}")
+          # Day10.print_sky(sky, extents)
+        # end)
+        |> Day10.find_message()
+
+      assert 0 == second
+      assert Day10.light_at(sky, {8, 5})
+      refute Day10.light_at(sky, {5, 5})
     end
   end
 
@@ -123,5 +165,6 @@ defmodule Day10Test do
   def puzzle_input() do
     File.stream!("priv/day10.txt")
     |> Day10.parse()
+    |> Enum.to_list()
   end
 end
