@@ -1,7 +1,7 @@
 defmodule Day10Test do
   use ExUnit.Case, async: false
 
-  @moduletag timeout: 10_000
+  @moduletag timeout: 1_000
 
   setup_all do
     [example: example_input(), puzzle: puzzle_input()]
@@ -90,19 +90,32 @@ defmodule Day10Test do
     end
   end
 
-  describe "find_message/1" do
-    test "example", %{example: example} do
+  describe "find_message_zero_origin/1" do
+    test "example - zero origin strategy", %{example: example} do
       {sky, second} =
         example
         |> Day10.light_stream()
-        |> Day10.find_message()
+        |> Day10.find_message_zero_origin()
 
       assert 3 == second
       assert Day10.light_at(sky, {8, 5})
       refute Day10.light_at(sky, {5, 5})
     end
+  end
 
-    @tag timeout: 500
+  describe "find_message_vertical/1" do
+    test "example", %{example: example} do
+      {sky, second, score} =
+        example
+        |> Day10.light_stream()
+        |> Day10.find_message_vertical()
+
+      assert 3 == second
+      assert Day10.light_at(sky, {8, 5})
+    end
+
+    @tag :profile
+    @tag timeout: 15_000
     test "puzzle", %{puzzle: puzzle} do
       extents = Day10.extents(puzzle)
       IO.inspect(extents, label: "extents")
@@ -110,12 +123,7 @@ defmodule Day10Test do
       {sky, second} =
         puzzle
         |> Day10.light_stream()
-        # |> Stream.with_index()
-        # |> Stream.each(fn {sky, second} ->
-        #   IO.puts("#{second}")
-          # Day10.print_sky(sky, extents)
-        # end)
-        |> Day10.find_message()
+        |> Day10.find_message_vertical()
 
       assert 0 == second
       assert Day10.light_at(sky, {8, 5})

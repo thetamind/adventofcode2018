@@ -49,7 +49,14 @@ defmodule Day10 do
     |> IO.puts()
   end
 
+  # extents: {-49919, 50232, -49910, 50189}
+  # {50_170, 50_200, -29_880, -29_910}
+
+  require Logger
+
   def plot(lights, {left, right, top, bottom}) do
+    Logger.debug(inspect(lights))
+
     for y <- top..bottom do
       for x <- left..right do
         point = {x, y}
@@ -66,11 +73,11 @@ defmodule Day10 do
     end)
   end
 
-  def magnitude ({left, right, top, bottom}) do
-{right - left, top - bottom}
+  def magnitude({left, right, top, bottom}) do
+    {right - left, top - bottom}
   end
 
-  def find_message(light_stream) do
+  def find_message_zero_origin(light_stream) do
     light_stream
     |> Stream.with_index()
     |> Stream.each(fn {_, second} -> IO.puts("#{second}") end)
@@ -81,5 +88,43 @@ defmodule Day10 do
     end)
     |> Enum.take(1)
     |> Enum.at(0)
+  end
+
+  def find_message_vertical(light_stream) do
+    light_stream
+    |> Stream.with_index()
+    |> Stream.map(fn {sky, second} ->
+      score = score_vertical(sky)
+      if rem(second, 100) == 0, do: Logger.debug("[#{second}] score: #{score}")
+      {sky, second, score}
+    end)
+    |> Enum.reduce_while({nil, -1, 0}, fn {_sky, _second, score} = current, prev ->
+      {_, _, prev_score} = prev
+
+      if score >= prev_score do
+        {:cont, current}
+      else
+        {:halt, prev}
+      end
+    end)
+  end
+
+  def score_vertical(sky) do
+    groups =
+      sky
+      |> Enum.group_by(fn %{px: px} -> px end, fn _ -> [] end)
+      |> Enum.map(fn {x, lights} -> {x, Enum.count(lights)} end)
+      |> Enum.filter(fn {_x, count} -> count >= 5 end)
+
+    # pad = fn s -> String.pad_leading(to_string(s), 5) end
+
+    # Logger.debug(fn ->
+    #   Enum.map(groups, fn {x, count} -> "#{pad.(x)}=>#{count}" end)
+    #   |> Enum.join("  ")
+    # end)
+
+    groups
+    |> Enum.map(fn {_, count} -> count end)
+    |> Enum.sum()
   end
 end
