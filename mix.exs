@@ -26,7 +26,8 @@ defmodule AOC2018.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false},
+      {:benchee, "~> 0.13.2", only: [:dev, :test]}
     ]
   end
 end

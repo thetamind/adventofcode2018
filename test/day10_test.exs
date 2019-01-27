@@ -9,11 +9,11 @@ defmodule Day10Test do
 
   describe "parse/1" do
     test "example into position and velocity", %{example: example} do
-      assert %{px: 7, py: 0, vx: -1, vy: 0} == example |> Enum.fetch!(1)
+      assert {7, 0, -1, 0} == example |> Enum.fetch!(1)
     end
 
     test "puzzle into position and velocity", %{puzzle: puzzle} do
-      assert %{px: -9855, py: -9873, vx: 1, vy: 1} == puzzle |> Enum.fetch!(1)
+      assert {-9855, -9873, 1, 1} == puzzle |> Enum.fetch!(1)
     end
   end
 
@@ -105,7 +105,7 @@ defmodule Day10Test do
 
   describe "find_message_vertical/1" do
     test "example", %{example: example} do
-      {sky, second, score} =
+      {sky, second, _score} =
         example
         |> Day10.light_stream()
         |> Day10.find_message_vertical()
@@ -128,6 +128,47 @@ defmodule Day10Test do
       assert 0 == second
       assert Day10.light_at(sky, {8, 5})
       refute Day10.light_at(sky, {5, 5})
+    end
+  end
+
+  @tag :wip
+  describe "score_vertical/1" do
+    test "equivalent" do
+      sky = [5, 5, 5, 5, 5, 9, 9, 9, 9, 9, 9, 9, 1, 2, 3] |> Enum.map(&{&1, 0, 0, 0})
+
+      assert 12 == Day10.score_vertical(sky)
+      assert 12 == Day10.score_vertical_group_by(sky)
+    end
+
+    @tag :bench
+    @tag :wip
+    test "performance" do
+      numbers = fn ->
+        Stream.unfold(:rand.seed_s(:exsplus), &:rand.uniform_s/1)
+        |> Stream.map(&(floor(&1 * 200) - 100))
+      end
+
+      to_sky = fn numbers ->
+        Stream.map(numbers, &{&1, 0, 0, 0})
+      end
+
+      make_sky = fn count -> Stream.take(to_sky.(numbers.()), count) end
+
+      inputs = %{
+        "Small" => make_sky.(100),
+        "Medium" => make_sky.(10_00),
+        "Large" => make_sky.(1_000_000)
+      }
+
+      Benchee.run(
+        %{
+          "group_by" => fn sky -> Day10.score_vertical_group_by(sky) end,
+          "reduce" => fn sky -> Day10.score_vertical(sky) end
+        },
+        time: 10,
+        memory_time: 2,
+        inputs: inputs
+      )
     end
   end
 

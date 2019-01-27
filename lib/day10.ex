@@ -8,9 +8,14 @@ defmodule Day10 do
     |> parts_to_points()
   end
 
+  @spec parts_to_points(nonempty_list()) :: {integer, integer, integer, integer}
   def parts_to_points([_, px, py, _, vx, vy | _]) do
-    %{px: px, py: py, vx: vx, vy: vy}
-    |> Enum.into(%{}, fn {k, v} -> {k, String.to_integer(v)} end)
+    {
+      String.to_integer(px),
+      String.to_integer(py),
+      String.to_integer(vx),
+      String.to_integer(vy)
+    }
   end
 
   def to_sky(points) do
@@ -18,7 +23,7 @@ defmodule Day10 do
   end
 
   def light_at(sky, {x, y}) do
-    Enum.any?(sky, fn %{px: px, py: py} ->
+    Enum.any?(sky, fn {px, py, _, _} ->
       px == x and py == y
     end)
   end
@@ -31,12 +36,12 @@ defmodule Day10 do
     Stream.map(sky, &move_light/1)
   end
 
-  def move_light(%{px: px, py: py, vx: vx, vy: vy}) do
-    %{px: px + vx, py: py + vy, vx: vx, vy: vy}
+  def move_light({px, py, vx, vy}) do
+    {px + vx, py + vy, vx, vy}
   end
 
   def print_sky(sky, extents) do
-    points = MapSet.new(sky, fn %{px: px, py: py} -> {px, py} end)
+    points = MapSet.new(sky, fn {px, py, _, _} -> {px, py} end)
 
     plot(points, extents)
     |> puts()
@@ -67,7 +72,7 @@ defmodule Day10 do
 
   def extents(sky) do
     sky
-    |> MapSet.new(fn %{px: px, py: py} -> {px, py} end)
+    |> MapSet.new(fn {px, py, _, _} -> {px, py} end)
     |> Enum.reduce({0, 0, 0, 0}, fn {x, y}, {xmin, xmax, ymin, ymax} ->
       {min(x, xmin), max(x, xmax), min(y, ymin), max(y, ymax)}
     end)
@@ -82,7 +87,7 @@ defmodule Day10 do
     |> Stream.with_index()
     |> Stream.each(fn {_, second} -> IO.puts("#{second}") end)
     |> Stream.filter(fn {sky, _second} ->
-      Enum.all?(sky, fn %{px: px, py: py} ->
+      Enum.all?(sky, fn {px, py, _, _} ->
         px >= 0 and py >= 0
       end)
     end)
@@ -112,7 +117,20 @@ defmodule Day10 do
   def score_vertical(sky) do
     groups =
       sky
-      |> Enum.group_by(fn %{px: px} -> px end, fn _ -> [] end)
+      |> Enum.reduce(%{}, fn {px, _, _, _}, acc ->
+        Map.update(acc, px, 1, &(&1 + 1))
+      end)
+      |> Enum.filter(fn {_x, count} -> count >= 5 end)
+
+    groups
+    |> Enum.map(fn {_, count} -> count end)
+    |> Enum.sum()
+  end
+
+  def score_vertical_group_by(sky) do
+    groups =
+      sky
+      |> Enum.group_by(fn {px, _, _, _} -> px end, fn _ -> [] end)
       |> Enum.map(fn {x, lights} -> {x, Enum.count(lights)} end)
       |> Enum.filter(fn {_x, count} -> count >= 5 end)
 
