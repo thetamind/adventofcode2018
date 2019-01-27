@@ -155,9 +155,9 @@ defmodule Day10Test do
       make_sky = fn count -> Stream.take(to_sky.(numbers.()), count) end
 
       inputs = %{
-        "Small" => make_sky.(100),
-        "Medium" => make_sky.(10_00),
-        "Large" => make_sky.(1_000_000)
+        "Small (1,000)" => make_sky.(1_000),
+        "Medium (100,000)" => make_sky.(100_00),
+        "Large (1,000,000)" => make_sky.(1_000_000)
       }
 
       Benchee.run(

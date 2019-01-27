@@ -1,4 +1,4 @@
-ExUnit.start()
+ExUnit.start(exclude: [bench: true])
 
 defmodule FProf do
   defmacro profile(do: block) do
