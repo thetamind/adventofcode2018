@@ -78,8 +78,14 @@ defmodule Day10 do
     end)
   end
 
-  def magnitude({left, right, top, bottom}) do
-    {right - left, top - bottom}
+  def dimensions({left, right, top, bottom}) do
+    {right - left, bottom - top}
+  end
+
+  def magnitude(nil), do: :infinity
+
+  def magnitude({left, right, top, bottom} = extents) do
+    (right - left) * (bottom - top)
   end
 
   def find_message_zero_origin(light_stream) do
@@ -114,7 +120,48 @@ defmodule Day10 do
     end)
   end
 
+  def find_message_extents(light_stream) do
+    light_stream
+    |> Stream.with_index()
+    |> Stream.map(fn {sky, second} ->
+      extents = extents(sky)
+
+      # score = score_vertical(sky)
+      # if rem(second, 100) == 0, do: Logger.debug("[#{second}] score: #{score}")
+      {sky, second, extents}
+    end)
+    |> Enum.reduce_while({nil, -1, nil}, fn {_sky, second, extents} = current, prev ->
+      {_, _, prev_extents} = prev
+      expanding? = magnitude(extents) > magnitude(prev_extents)
+       if rem(second, 100) == 0, do: Logger.debug("[#{second}] magnitude: #{magnitude(extents)}")
+
+      if expanding? do
+        {:halt, prev}
+      else
+        {:cont, current}
+      end
+    end)
+  end
+
   def score_vertical(sky) do
+    groups =
+      sky
+      |> Enum.reduce(%{}, fn {px, py, _, _}, acc ->
+        Map.update(acc, px, [1], &[py | &1])
+      end)
+
+    Enum.reduce(groups, 0, fn {_, pys}, acc ->
+      count = Enum.count(pys)
+
+      if count >= 5 do
+        acc + count
+      else
+        acc
+      end
+    end)
+  end
+
+  def score_vertical_reduce(sky) do
     groups =
       sky
       |> Enum.reduce(%{}, fn {px, _, _, _}, acc ->

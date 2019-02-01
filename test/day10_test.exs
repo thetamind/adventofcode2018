@@ -103,6 +103,7 @@ defmodule Day10Test do
     end
   end
 
+  @tag :wip
   describe "find_message_vertical/1" do
     test "example", %{example: example} do
       {sky, second, _score} =
@@ -113,8 +114,21 @@ defmodule Day10Test do
       assert 3 == second
       assert Day10.light_at(sky, {8, 5})
     end
+  end
 
-    @tag :profile
+  @tag :wip
+  describe "find_message_extents/1" do
+    test "example", %{example: example} do
+      {sky, second, _extents} =
+        example
+        |> Day10.light_stream()
+        |> Day10.find_message_extents()
+
+      assert 3 == second
+      assert Day10.light_at(sky, {8, 5})
+    end
+
+    @tag :wip
     @tag timeout: 15_000
     test "puzzle", %{puzzle: puzzle} do
       extents = Day10.extents(puzzle)
@@ -123,7 +137,7 @@ defmodule Day10Test do
       {sky, second} =
         puzzle
         |> Day10.light_stream()
-        |> Day10.find_message_vertical()
+        |> Day10.find_message_extents()
 
       assert 0 == second
       assert Day10.light_at(sky, {8, 5})
@@ -137,11 +151,11 @@ defmodule Day10Test do
       sky = [5, 5, 5, 5, 5, 9, 9, 9, 9, 9, 9, 9, 1, 2, 3] |> Enum.map(&{&1, 0, 0, 0})
 
       assert 12 == Day10.score_vertical(sky)
+      assert 12 == Day10.score_vertical_reduce(sky)
       assert 12 == Day10.score_vertical_group_by(sky)
     end
 
     @tag :bench
-    @tag :wip
     test "performance" do
       numbers = fn ->
         Stream.unfold(:rand.seed_s(:exsplus), &:rand.uniform_s/1)
@@ -155,18 +169,18 @@ defmodule Day10Test do
       make_sky = fn count -> Stream.take(to_sky.(numbers.()), count) end
 
       inputs = %{
-        "Small (1,000)" => make_sky.(1_000),
-        "Medium (100,000)" => make_sky.(100_00),
+        "Medium (100,000)" => make_sky.(100_000),
         "Large (1,000,000)" => make_sky.(1_000_000)
       }
 
       Benchee.run(
         %{
           "group_by" => fn sky -> Day10.score_vertical_group_by(sky) end,
-          "reduce" => fn sky -> Day10.score_vertical(sky) end
+          "reduce" => fn sky -> Day10.score_vertical_reduce(sky) end,
+          "better" => fn sky -> Day10.score_vertical(sky) end
         },
-        time: 10,
-        memory_time: 2,
+        time: 4,
+        memory_time: 1,
         inputs: inputs
       )
     end
