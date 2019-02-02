@@ -191,17 +191,6 @@ defmodule Day10 do
     |> Stream.run()
   end
 
-  def jump_answer() do
-    puzzle =
-      File.stream!("priv/day10.txt")
-      |> Day10.parse()
-      |> Enum.to_list()
-
-    # {sky, second, extents} =
-    puzzle
-    |> Day10.find_message_search()
-  end
-
   def answer() do
     puzzle =
       File.stream!("priv/day10.txt")
