@@ -40,6 +40,10 @@ defmodule Day10 do
     {px + vx, py + vy, vx, vy}
   end
 
+  def move_light({px, py, vx, vy}, seconds) do
+    {px + vx * seconds, py + vy * seconds, vx, vy}
+  end
+
   def print_sky(sky, extents) do
     points = MapSet.new(sky, fn {px, py, _, _} -> {px, py} end)
 
@@ -71,9 +75,11 @@ defmodule Day10 do
   end
 
   def extents(sky) do
+    {x, y, _, _} = List.first(sky)
+
     sky
     |> MapSet.new(fn {px, py, _, _} -> {px, py} end)
-    |> Enum.reduce({0, 0, 0, 0}, fn {x, y}, {xmin, xmax, ymin, ymax} ->
+    |> Enum.reduce({x, x, y, y}, fn {x, y}, {xmin, xmax, ymin, ymax} ->
       {min(x, xmin), max(x, xmax), min(y, ymin), max(y, ymax)}
     end)
   end
@@ -84,7 +90,7 @@ defmodule Day10 do
 
   def magnitude(nil), do: :infinity
 
-  def magnitude({left, right, top, bottom} = extents) do
+  def magnitude({left, right, top, bottom}) do
     (right - left) * (bottom - top)
   end
 
@@ -126,21 +132,84 @@ defmodule Day10 do
     |> Stream.map(fn {sky, second} ->
       extents = extents(sky)
 
-      # score = score_vertical(sky)
-      # if rem(second, 100) == 0, do: Logger.debug("[#{second}] score: #{score}")
       {sky, second, extents}
     end)
     |> Enum.reduce_while({nil, -1, nil}, fn {_sky, second, extents} = current, prev ->
       {_, _, prev_extents} = prev
       expanding? = magnitude(extents) > magnitude(prev_extents)
-       if rem(second, 100) == 0, do: Logger.debug("[#{second}] magnitude: #{magnitude(extents)}")
+      if rem(second, 100) == 0, do: Logger.debug("[#{second}] magnitude: #{magnitude(extents)}")
 
-      if expanding? do
+      if expanding? or second > 100 do
         {:halt, prev}
       else
         {:cont, current}
       end
     end)
+  end
+
+  def sky_at(sky, second) do
+    Enum.map(sky, &move_light(&1, second))
+  end
+
+  def meta_sky(sky, second) do
+    sky = sky_at(sky, second)
+    extents = extents(sky)
+    dimensions = dimensions(extents)
+    magnitude = magnitude(extents)
+
+    %{sky: sky, second: second, extents: extents, dimensions: dimensions, magnitude: magnitude}
+  end
+
+  def describe_sky(%{
+        second: second,
+        extents: extents,
+        dimensions: dimensions,
+        magnitude: magnitude
+      }) do
+    pad = fn x -> String.pad_leading(to_string(x), 7) end
+    look = fn x -> String.pad_leading(inspect(x), 18) end
+
+    "[#{pad.(second)}]\t#{look.(extents)}\tdim: #{look.(dimensions)}\tmagnitude: #{
+      pad.(magnitude)
+    }"
+  end
+
+  def time_travel() do
+    puzzle =
+      File.stream!("priv/day10.txt")
+      |> Day10.parse()
+      |> Enum.to_list()
+
+    Stream.iterate(1, &(&1 + 1_000))
+    |> Stream.map(fn second ->
+      log = describe_sky(meta_sky(puzzle, second))
+      Logger.debug(log)
+    end)
+    |> Stream.take(15)
+    |> Stream.run()
+  end
+
+  def jump_answer() do
+    puzzle =
+      File.stream!("priv/day10.txt")
+      |> Day10.parse()
+      |> Enum.to_list()
+
+    # {sky, second, extents} =
+    puzzle
+    |> Day10.find_message_search()
+  end
+
+  def answer() do
+    puzzle =
+      File.stream!("priv/day10.txt")
+      |> Day10.parse()
+      |> Enum.to_list()
+
+    # {sky, second, extents} =
+    puzzle
+    |> Day10.light_stream()
+    |> Day10.find_message_extents()
   end
 
   def score_vertical(sky) do

@@ -134,14 +134,12 @@ defmodule Day10Test do
       extents = Day10.extents(puzzle)
       IO.inspect(extents, label: "extents")
 
-      {sky, second} =
+      {_sky, second, _extents} =
         puzzle
         |> Day10.light_stream()
         |> Day10.find_message_extents()
 
-      assert 0 == second
-      assert Day10.light_at(sky, {8, 5})
-      refute Day10.light_at(sky, {5, 5})
+      assert 1_009 == second
     end
   end
 
@@ -156,7 +154,7 @@ defmodule Day10Test do
     end
 
     @tag :bench
-    test "performance" do
+    test "score_vertical performance" do
       numbers = fn ->
         Stream.unfold(:rand.seed_s(:exsplus), &:rand.uniform_s/1)
         |> Stream.map(&(floor(&1 * 200) - 100))
