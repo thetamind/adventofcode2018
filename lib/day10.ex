@@ -1,5 +1,5 @@
 defmodule Day10 do
-  def parse(input), do: Stream.map(input, &parse_line/1)
+  def parse(input), do: Enum.map(input, &parse_line/1)
 
   def parse_line(line) do
     line
@@ -33,7 +33,7 @@ defmodule Day10 do
   end
 
   def move_lights(sky) do
-    Stream.map(sky, &move_light/1)
+    Enum.map(sky, &move_light/1)
   end
 
   def move_light({px, py, vx, vy}) do

@@ -226,6 +226,5 @@ defmodule Day10Test do
   def puzzle_input() do
     File.stream!("priv/day10.txt")
     |> Day10.parse()
-    |> Enum.to_list()
   end
 end
