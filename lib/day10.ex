@@ -64,7 +64,7 @@ defmodule Day10 do
   require Logger
 
   def plot(lights, {left, right, top, bottom}) do
-    Logger.debug(inspect(lights))
+    # Logger.debug(inspect(lights))
 
     for y <- top..bottom do
       for x <- left..right do
@@ -137,9 +137,14 @@ defmodule Day10 do
     |> Enum.reduce_while({nil, -1, nil}, fn {_sky, second, extents} = current, prev ->
       {_, _, prev_extents} = prev
       expanding? = magnitude(extents) > magnitude(prev_extents)
-      if rem(second, 100) == 0, do: Logger.debug("[#{second}] magnitude: #{magnitude(extents)}")
 
-      if expanding? or second > 100 do
+      if rem(second, 100) == 0,
+        do: Logger.debug("[#{second}] magnitude: #{magnitude(extents)} #{expanding?}")
+
+      if second > 1_000 and second <= 1_020,
+        do: Logger.debug("[#{second}] magnitude: #{magnitude(extents)} #{expanding?}")
+
+      if expanding? or second > 1_100 do
         {:halt, prev}
       else
         {:cont, current}
@@ -169,9 +174,7 @@ defmodule Day10 do
     pad = fn x -> String.pad_leading(to_string(x), 7) end
     look = fn x -> String.pad_leading(inspect(x), 18) end
 
-    "[#{pad.(second)}]\t#{look.(extents)}\tdim: #{look.(dimensions)}\tmagnitude: #{
-      pad.(magnitude)
-    }"
+    "[#{pad.(second)}]\t#{look.(extents)}\tdim: #{look.(dimensions)}\tmag: #{pad.(magnitude)}"
   end
 
   def time_travel() do
@@ -182,8 +185,7 @@ defmodule Day10 do
 
     Stream.iterate(1, &(&1 + 1_000))
     |> Stream.map(fn second ->
-      log = describe_sky(meta_sky(puzzle, second))
-      Logger.debug(log)
+      Logger.debug(fn -> describe_sky(meta_sky(puzzle, second)) end)
     end)
     |> Stream.take(15)
     |> Stream.run()
