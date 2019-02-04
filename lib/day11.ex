@@ -43,10 +43,9 @@ defmodule Day11 do
   end
 
   def third_digit(number) do
-    Integer.to_string(number)
-    |> String.graphemes()
+    number
+    |> Integer.digits()
     |> Enum.reverse()
-    |> Enum.at(2, "0")
-    |> String.to_integer()
+    |> Enum.at(2, 0)
   end
 end
