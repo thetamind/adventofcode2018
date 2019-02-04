@@ -13,7 +13,17 @@ defmodule Day11Test do
     end
 
     test "puzzle" do
-      assert nil == answer(serial: 4172)
+      assert {{243, 43}, 29} == answer(serial: 4172)
+    end
+  end
+
+  describe "square_power/2" do
+    test "example 1" do
+      assert 29 == square_power(grid(serial: 18), {33, 45})
+    end
+
+    test "example 2" do
+      assert 30 == square_power(grid(serial: 42), {21, 61})
     end
   end
 
