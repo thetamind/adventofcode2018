@@ -29,19 +29,19 @@ defmodule Day11Test do
 
   describe "cell_power/2" do
     test "example 1" do
-      assert 4 == grid(serial: 8) |> cell_power({3, 5})
+      assert 4 == cell_power(8, {3, 5})
     end
 
     test "example 2" do
-      assert -5 == grid(serial: 57) |> cell_power({122, 79})
+      assert -5 == cell_power(57, {122, 79})
     end
 
     test "example 3" do
-      assert 0 == grid(serial: 39) |> cell_power({217, 196})
+      assert 0 == cell_power(39, {217, 196})
     end
 
     test "example 4" do
-      assert 4 == grid(serial: 71) |> cell_power({101, 153})
+      assert 4 == cell_power(71, {101, 153})
     end
   end
 

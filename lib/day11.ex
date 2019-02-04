@@ -8,13 +8,19 @@ defmodule Day11 do
 
   def grid(opts) do
     serial = Keyword.fetch!(opts, :serial)
-    %{serial: serial}
+
+    Map.new(all_coordinates(), fn {x, y} ->
+      {{x, y}, cell_power(serial, {x, y})}
+    end)
+  end
+
+  def all_coordinates() do
+    for y <- 1..300, x <- 1..300, do: {x, y}
   end
 
   def all_squares(grid) do
-    Map.new(all_square_coordinates(), fn {x, y} ->
-      {{x, y}, square_power(grid, {x, y})}
-    end)
+    all_square_coordinates()
+    |> Enum.map(fn {x, y} -> {{x, y}, square_power(grid, {x, y})} end)
   end
 
   def all_square_coordinates() do
@@ -23,7 +29,7 @@ defmodule Day11 do
 
   def square_power(grid, {x, y}) do
     square_for(x, y)
-    |> Enum.map(&cell_power(grid, &1))
+    |> Enum.map(&Map.fetch!(grid, &1))
     |> Enum.sum()
   end
 
@@ -34,10 +40,10 @@ defmodule Day11 do
     for y <- top..bottom, x <- left..right, do: {x, y}
   end
 
-  def cell_power(grid, {x, y}) do
+  def cell_power(serial, {x, y}) do
     rack_id = x + 10
     power = rack_id * y
-    power = power + grid.serial
+    power = power + serial
     power = power * rack_id
     third_digit(power) - 5
   end
