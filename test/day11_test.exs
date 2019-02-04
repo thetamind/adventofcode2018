@@ -17,6 +17,20 @@ defmodule Day11Test do
     end
   end
 
+  describe "answer2/1" do
+    test "example 1" do
+      assert {{90, 269}, 16, 113} == answer_part2(serial: 18)
+    end
+
+    test "example 2" do
+      assert {{232, 251}, 12, 119} == answer_part2(serial: 42)
+    end
+
+    test "puzzle" do
+      assert {{0, 0}, 0, 0} == answer_part2(serial: 4172)
+    end
+  end
+
   describe "square_power/2" do
     test "example 1" do
       assert 29 == square_power(grid(serial: 18), {33, 45})
