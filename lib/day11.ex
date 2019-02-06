@@ -12,17 +12,22 @@ defmodule Day11 do
   def answer_part2(opts) do
     grid = grid(opts)
 
-    1..20
-    |> Enum.map(fn size ->
-      IO.puts("#{size}")
+    20..1
+    |> Task.async_stream(
+      fn size ->
+        IO.puts("#{size}")
 
-      {{x, y}, power} =
-        all_squares(grid, size)
-        |> Enum.max_by(fn {_, power} -> power end)
+        {{x, y}, power} =
+          all_squares(grid, size)
+          |> Enum.max_by(fn {_, power} -> power end)
 
-      {{x, y}, size, power}
-      |> IO.inspect()
-    end)
+        {{x, y}, size, power}
+        |> IO.inspect()
+      end,
+      ordered: false,
+      timeout: 30_000
+    )
+    |> Enum.map(fn {:ok, rest} -> rest end)
     |> Enum.max_by(fn {_, _, power} -> power end)
   end
 
