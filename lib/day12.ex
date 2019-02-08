@@ -8,24 +8,37 @@ defmodule Day12 do
   end
 
   def parse(input) do
-    state =
+    {state, rules} =
       input
       |> String.split("\n")
-      |> Enum.reduce([], fn line, acc ->
-        [parse_line(line) | acc]
+      |> Enum.reduce({nil, []}, fn line, {state, rules} ->
+        case parse_line(line) do
+          {:state, pots} -> {pots, rules}
+          {:rule, rule} -> {state, [rule | rules]}
+          nil -> {state, rules}
+        end
       end)
-      |> Enum.reverse()
 
-    {state, []}
+    {state, Enum.reverse(rules)}
   end
 
-  def parse_line(<<"initial state: ", pots::binary>>) do
-    pots
-    |> String.split("", trim: true)
+  def parse_line(<<"initial state: ", input::binary>>) do
+    pots =
+      input
+      |> String.split("", trim: true)
+      |> Enum.with_index()
+      |> Enum.reduce([], fn elem, acc ->
+        case elem do
+          {"#", index} -> [index | acc]
+          {".", _} -> acc
+        end
+      end)
+
+    {:state, Enum.reverse(pots)}
   end
 
   def parse_line(<<pattern::binary-size(5), " => ", present::binary-size(1)>>) do
-    {pattern, present}
+    {:rule, {pattern, present}}
   end
 
   def parse_line(""), do: nil
