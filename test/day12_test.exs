@@ -13,6 +13,32 @@ defmodule Day12Test do
     end
   end
 
+  describe "next_gen/2" do
+    test "simple" do
+      rules = [
+        {{false, false, false, true, true}, true}
+      ]
+
+      state = [0, 5, 6]
+
+      assert [4] == next_gen(state, rules)
+    end
+  end
+
+  describe "apply_rule/2" do
+    test "match" do
+      rule = {{false, false, true}, true}
+      values = {false, false, true}
+      assert {:match, true} == apply_rule(values, rule)
+    end
+
+    test "no match" do
+      rule = {{true, false, true}, true}
+      values = {false, false, false}
+      assert nil == apply_rule(values, rule)
+    end
+  end
+
   describe "parse/1" do
     test "returns initial state" do
       {state, _} = parse(example_input())
@@ -22,7 +48,7 @@ defmodule Day12Test do
 
     test "returns rules" do
       {_, rules} = parse(example_input())
-      assert {[false, false, false, true, true], true} == List.first(rules)
+      assert {{false, false, false, true, true}, true} == List.first(rules)
     end
   end
 

@@ -3,8 +3,10 @@ defmodule Day12 do
     {state, rules} = parse(input)
 
     state
-    |> run(rules)
-    |> Enum.at(20)
+    |> all_generations(rules)
+    |> Enum.at(generation)
+    |> IO.inspect(label: "gen #{generation}")
+    |> Enum.sum()
   end
 
   def parse(input) do
@@ -47,6 +49,7 @@ defmodule Day12 do
           "." -> false
         end
       end)
+      |> List.to_tuple()
 
     present =
       case present do
@@ -59,7 +62,66 @@ defmodule Day12 do
 
   def parse_line(""), do: nil
 
-  def run(state, rules) do
-    [0, 1, 2, 3]
+  def all_generations(state, rules) do
+    Stream.iterate(state, &next_gen(&1, rules))
+    |> Stream.each(&inspect_state/1)
+  end
+
+  def next_gen(state, rules) do
+    {left, right} = Enum.min_max(state)
+
+    left..right
+    |> Enum.map(fn n ->
+      neighbours = [n - 2, n - 1, n, n + 1, n + 2]
+      values = get_values(state, neighbours)
+
+      case apply_rules(values, rules) do
+        true -> n
+        false -> nil
+        nil -> nil
+      end
+    end)
+    |> Enum.reject(&(&1 == nil))
+    |> IO.inspect(label: "applied")
+  end
+
+  def get_values(state, neighbours) do
+    neighbours
+    |> Enum.map(fn n ->
+      Enum.member?(state, n)
+    end)
+    |> List.to_tuple()
+  end
+
+  def apply_rules(values, rules) do
+    rules
+    |> Enum.reduce_while(rules, fn rule, _acc ->
+      case apply_rule(values, rule) do
+        {:match, present} -> {:halt, present}
+        nil -> {:cont, nil}
+      end
+    end)
+  end
+
+  def apply_rule(values, {pattern, present}) when values == pattern, do: {:match, present}
+  def apply_rule(_values, {_pattern, _present}), do: nil
+
+  require Logger
+
+  def inspect_state([]) do
+    IO.puts("<<  empty state  >>")
+  end
+
+  def inspect_state(state) do
+    {left, right} = Enum.min_max(state)
+
+    msg =
+      (left - 2)..(right + 2)
+      |> Enum.map(fn n ->
+        if Enum.any?(state, fn x -> x == n end), do: "#", else: "."
+      end)
+      |> Enum.join()
+
+    IO.puts(msg)
   end
 end
