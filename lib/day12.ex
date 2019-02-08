@@ -38,6 +38,22 @@ defmodule Day12 do
   end
 
   def parse_line(<<pattern::binary-size(5), " => ", present::binary-size(1)>>) do
+    pattern =
+      pattern
+      |> String.split("", trim: true)
+      |> Enum.map(fn code ->
+        case code do
+          "#" -> true
+          "." -> false
+        end
+      end)
+
+    present =
+      case present do
+        "#" -> true
+        "." -> false
+      end
+
     {:rule, {pattern, present}}
   end
 

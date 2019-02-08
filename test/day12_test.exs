@@ -20,7 +20,10 @@ defmodule Day12Test do
       assert expected == state
     end
 
-    test "returns rules"
+    test "returns rules" do
+      {_, rules} = parse(example_input())
+      assert {[false, false, false, true, true], true} == List.first(rules)
+    end
   end
 
   def example_input() do
