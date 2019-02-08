@@ -3,6 +3,8 @@ defmodule Day12Test do
 
   import Day12
 
+  @moduletag timeout: 10_000
+
   describe "answer/1" do
     test "example 1" do
       assert 325 == answer(example_input(), 20)
@@ -10,6 +12,10 @@ defmodule Day12Test do
 
     test "puzzle" do
       assert 2349 == answer(puzzle_input(), 20)
+    end
+
+    test "puzzle part 2" do
+      assert 0 == answer(puzzle_input(), 50_000_000_000)
     end
   end
 

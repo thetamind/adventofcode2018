@@ -2,11 +2,16 @@ defmodule Day12 do
   def answer(input, generation) do
     {state, rules} = parse(input)
 
-    state
-    |> all_generations(rules)
-    |> Enum.at(generation)
-    |> IO.inspect(label: "gen #{generation}")
-    |> Enum.sum()
+    {pots, gen} =
+      state
+      |> all_generations(rules)
+      |> Stream.with_index()
+      |> Stream.each(fn {_pots, gen} -> if rem(gen, 1_000) == 0, do: IO.puts(to_string(gen)) end)
+      |> Enum.at(generation)
+      |> IO.inspect(label: "gen #{generation}")
+
+    IO.puts("#{gen}")
+    Enum.sum(pots)
   end
 
   def parse(input) do
@@ -64,7 +69,6 @@ defmodule Day12 do
 
   def all_generations(state, rules) do
     Stream.iterate(state, &next_gen(&1, rules))
-    |> Stream.each(&inspect_state/1)
   end
 
   def next_gen(state, rules) do
