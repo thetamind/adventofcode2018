@@ -9,7 +9,7 @@ defmodule Day12Test do
     end
 
     test "puzzle" do
-      assert 0 == answer(puzzle_input(), 20)
+      assert 2349 == answer(puzzle_input(), 20)
     end
   end
 
@@ -22,6 +22,16 @@ defmodule Day12Test do
       state = [0, 5, 6]
 
       assert [4] == next_gen(state, rules)
+    end
+
+    test "negative" do
+      rules = [
+        {{false, false, false, true, true}, true}
+      ]
+
+      state = [0, 1]
+
+      assert [-1] == next_gen(state, rules)
     end
   end
 

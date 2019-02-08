@@ -70,7 +70,7 @@ defmodule Day12 do
   def next_gen(state, rules) do
     {left, right} = Enum.min_max(state)
 
-    left..right
+    (left - 2)..(right + 2)
     |> Enum.map(fn n ->
       neighbours = [n - 2, n - 1, n, n + 1, n + 2]
       values = get_values(state, neighbours)
@@ -82,7 +82,6 @@ defmodule Day12 do
       end
     end)
     |> Enum.reject(&(&1 == nil))
-    |> IO.inspect(label: "applied")
   end
 
   def get_values(state, neighbours) do
