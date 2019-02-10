@@ -6,7 +6,7 @@ defmodule Day12 do
       state
       |> all_generations(rules)
       |> Stream.with_index()
-      |> Stream.each(fn {_pots, gen} -> if rem(gen, 1_000) == 0, do: IO.puts(to_string(gen)) end)
+      |> Stream.each(fn {_pots, gen} -> if rem(gen, 10_000) == 0, do: IO.puts(to_string(gen)) end)
       |> Enum.at(generation)
       |> IO.inspect(label: "gen #{generation}")
 
@@ -68,6 +68,7 @@ defmodule Day12 do
   def parse_line(""), do: nil
 
   def all_generations(state, rules) do
+    rules = prepare_rules(rules)
     Stream.iterate(state, &next_gen(&1, rules))
   end
 
@@ -96,18 +97,14 @@ defmodule Day12 do
     |> List.to_tuple()
   end
 
-  def apply_rules(values, rules) do
-    rules
-    |> Enum.reduce_while(rules, fn rule, _acc ->
-      case apply_rule(values, rule) do
-        {:match, present} -> {:halt, present}
-        nil -> {:cont, nil}
-      end
-    end)
+  def prepare_rules(rules) do
+    Map.new(rules)
   end
 
-  def apply_rule(values, {pattern, present}) when values == pattern, do: {:match, present}
-  def apply_rule(_values, {_pattern, _present}), do: nil
+  @compile {:inline, apply_rules: 2}
+  def apply_rules(values, rules) do
+    Map.get(rules, values)
+  end
 
   require Logger
 

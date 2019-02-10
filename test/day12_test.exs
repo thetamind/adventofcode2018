@@ -21,9 +21,10 @@ defmodule Day12Test do
 
   describe "next_gen/2" do
     test "simple" do
-      rules = [
-        {{false, false, false, true, true}, true}
-      ]
+      rules =
+        prepare_rules([
+          {{false, false, false, true, true}, true}
+        ])
 
       state = [0, 5, 6]
 
@@ -31,9 +32,10 @@ defmodule Day12Test do
     end
 
     test "negative" do
-      rules = [
-        {{false, false, false, true, true}, true}
-      ]
+      rules =
+        prepare_rules([
+          {{false, false, false, true, true}, true}
+        ])
 
       state = [0, 1]
 
@@ -41,17 +43,17 @@ defmodule Day12Test do
     end
   end
 
-  describe "apply_rule/2" do
+  describe "apply_rules/2" do
     test "match" do
-      rule = {{false, false, true}, true}
+      rules = prepare_rules([{{false, false, true}, true}])
       values = {false, false, true}
-      assert {:match, true} == apply_rule(values, rule)
+      assert true == apply_rules(values, rules)
     end
 
     test "no match" do
-      rule = {{true, false, true}, true}
+      rules = prepare_rules([{{true, false, true}, true}])
       values = {false, false, false}
-      assert nil == apply_rule(values, rule)
+      assert nil == apply_rules(values, rules)
     end
   end
 
