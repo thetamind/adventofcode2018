@@ -75,17 +75,17 @@ defmodule Day12 do
     {left, right} = Enum.min_max(state)
 
     (left - 2)..(right + 2)
-    |> Enum.map(fn n ->
+    |> Enum.reduce([], fn n, acc ->
       neighbours = [n - 2, n - 1, n, n + 1, n + 2]
       values = get_values(state, neighbours)
 
       case apply_rules(values, rules) do
-        true -> n
-        false -> nil
-        nil -> nil
+        true -> [n | acc]
+        false -> acc
+        nil -> acc
       end
     end)
-    |> Enum.reject(&(&1 == nil))
+    |> Enum.reverse()
   end
 
   def get_values(state, neighbours) do
