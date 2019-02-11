@@ -43,6 +43,36 @@ defmodule Day12Test do
     end
   end
 
+  describe "pot_stream/1" do
+    setup do
+      [stream: pot_stream([0, 3, 5, 8, 9, 15, 16])]
+    end
+
+    test "begins before first populated pot", %{stream: stream} do
+      # left -4, centre -2, right 0
+      assert {-2, {false, false, false, false, true}} == Enum.at(stream, -2 + 2)
+    end
+
+    test "first populated pot", %{stream: stream} do
+      # left -2, centre 0, right 2
+      assert {0, {false, false, true, false, false}} == Enum.at(stream, 0 + 2)
+      # left -1, centre 1, right 3
+      assert {1, {false, true, false, false, true}} == Enum.at(stream, 1 + 2)
+    end
+
+    test "last populated pot", %{stream: stream} do
+      # left 14, centre 16, right 18
+      assert {16, {false, true, true, false, false}} == Enum.at(stream, 16 + 2)
+    end
+
+    test "ends after last populated pot", %{stream: stream} do
+      # left 16, centre 18, right 20
+      assert {18, {true, false, false, false, false}} == Enum.at(stream, 18 + 2)
+      # past the end
+      assert nil == Enum.at(stream, 19 + 2)
+    end
+  end
+
   describe "apply_rules/2" do
     test "match" do
       rules = prepare_rules([{{false, false, true}, true}])
