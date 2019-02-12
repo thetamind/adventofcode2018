@@ -5,9 +5,9 @@ defmodule Day12 do
     {pots, gen} =
       state
       |> all_generations(rules)
-      |> Stream.with_index()
-      |> Stream.each(fn {_pots, gen} -> if rem(gen, 10_000) == 0, do: IO.puts(to_string(gen)) end)
-      |> Enum.at(generation)
+      |> time_leap(generation)
+      |> Enum.to_list()
+      |> List.last()
       |> IO.inspect(label: "gen #{generation}")
 
     IO.puts("#{gen}")
@@ -66,6 +66,55 @@ defmodule Day12 do
   end
 
   def parse_line(""), do: nil
+
+
+  investigate
+  0
+  100
+  200
+  255 -> :result, sum: 1234
+  300
+  400 :steady, diff_per_gen: 20, sum: 4444
+  ---
+  calculate target
+  4444 + (target - current) * diff_per_gen
+
+  def time_leap(all_generations, target_generation) do
+    all_generations
+    |> Stream.with_index()
+    |> Stream.each(fn {pots, gen} ->
+      if rem(gen, 100) == 0 do
+        IO.puts("#{gen} - #{Enum.count(pots)} pots - #{Enum.sum(pots)} sum")
+      end
+    end)
+    |> Stream.transform(%{count: 0, sum: 0}, &do_time_leap/2)
+  end
+
+  defp do_time_leap({pots, gen}, acc) when rem(gen, 100) == 0 do
+    count = Enum.count(pots)
+    sum = Enum.sum(pots)
+    next_acc = %{count: count, sum: sum, gen: gen}
+
+    if steady_state?(pots, acc) do
+      IO.inspect(acc, label: "acc")
+      IO.inspect(next_acc, label: "current")
+      prev_sum = Map.get(acc, :sum)
+      diff = sum - prev_sum
+      diff_per_gen = div(diff, 100)
+      IO.puts("diff: #{diff} per_gen: #{diff_per_gen}")
+
+      {:halt, pots}
+      |> IO.inspect(label: "do_time_leap")
+    else
+      {[pots], next_acc}
+    end
+  end
+
+  defp do_time_leap({pots, _gen}, acc), do: {[pots], acc}
+
+  def steady_state?(pots, %{count: prev_count}) do
+    Enum.count(pots) == prev_count
+  end
 
   def all_generations(state, rules) do
     rules = prepare_rules(rules)
