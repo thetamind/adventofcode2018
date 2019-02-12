@@ -2,16 +2,12 @@ defmodule Day12 do
   def answer(input, generation) do
     {state, rules} = parse(input)
 
-    {pots, gen} =
+    {sum, _gen} =
       state
       |> all_generations(rules)
       |> time_leap(generation)
-      |> Enum.to_list()
-      |> List.last()
-      |> IO.inspect(label: "gen #{generation}")
 
-    IO.puts("#{gen}")
-    Enum.sum(pots)
+    sum
   end
 
   def parse(input) do
@@ -67,50 +63,54 @@ defmodule Day12 do
 
   def parse_line(""), do: nil
 
-
-  investigate
-  0
-  100
-  200
-  255 -> :result, sum: 1234
-  300
-  400 :steady, diff_per_gen: 20, sum: 4444
-  ---
-  calculate target
-  4444 + (target - current) * diff_per_gen
-
   def time_leap(all_generations, target_generation) do
-    all_generations
-    |> Stream.with_index()
-    |> Stream.each(fn {pots, gen} ->
-      if rem(gen, 100) == 0 do
-        IO.puts("#{gen} - #{Enum.count(pots)} pots - #{Enum.sum(pots)} sum")
-      end
-    end)
-    |> Stream.transform(%{count: 0, sum: 0}, &do_time_leap/2)
-  end
+    case find_steady_state(all_generations, target_generation) do
+      {:result, sum: sum, gen: gen} ->
+        {sum, gen}
 
-  defp do_time_leap({pots, gen}, acc) when rem(gen, 100) == 0 do
-    count = Enum.count(pots)
-    sum = Enum.sum(pots)
-    next_acc = %{count: count, sum: sum, gen: gen}
-
-    if steady_state?(pots, acc) do
-      IO.inspect(acc, label: "acc")
-      IO.inspect(next_acc, label: "current")
-      prev_sum = Map.get(acc, :sum)
-      diff = sum - prev_sum
-      diff_per_gen = div(diff, 100)
-      IO.puts("diff: #{diff} per_gen: #{diff_per_gen}")
-
-      {:halt, pots}
-      |> IO.inspect(label: "do_time_leap")
-    else
-      {[pots], next_acc}
+      {:steady, diff_per_gen: diff_per_gen, gen: gen, sum: sum} ->
+        {sum + (target_generation - gen) * diff_per_gen, gen}
     end
   end
 
-  defp do_time_leap({pots, _gen}, acc), do: {[pots], acc}
+  def find_steady_state(all_generations, target_generation) do
+    all_generations
+    |> Stream.with_index()
+    |> Stream.transform(
+      %{count: 0, sum: 0, target: target_generation},
+      &do_find_steady_state/2
+    )
+    |> Stream.take(-1)
+    |> Enum.at(0)
+  end
+
+  defp do_find_steady_state({_pots, meta}, :halt), do: {:halt, meta}
+
+  defp do_find_steady_state({pots, gen}, %{target: target}) when target == gen do
+    sum = Enum.sum(pots)
+
+    {[{:result, sum: sum, gen: gen}], :halt}
+  end
+
+  defp do_find_steady_state({pots, gen}, acc) when rem(gen, 100) == 0 do
+    count = Enum.count(pots)
+    sum = Enum.sum(pots)
+    next_acc = Map.merge(acc, %{count: count, sum: sum, gen: gen})
+
+    if steady_state?(pots, acc) do
+      prev_sum = Map.get(acc, :sum)
+      diff = sum - prev_sum
+      diff_per_gen = div(diff, 100)
+
+      {[{:steady, diff_per_gen: diff_per_gen, gen: gen, sum: sum}], :halt}
+    else
+      {[{pots, gen}], next_acc}
+    end
+  end
+
+  defp do_find_steady_state({pots, gen}, acc) do
+    {[{pots, gen}], acc}
+  end
 
   def steady_state?(pots, %{count: prev_count}) do
     Enum.count(pots) == prev_count
