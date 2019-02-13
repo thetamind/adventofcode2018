@@ -11,6 +11,7 @@ defmodule Day13.TrackMap do
     input
     |> String.split("\n")
     |> Enum.map(&parse_line/1)
+    |> Enum.reject(&(tuple_size(&1) == 0))
     |> List.to_tuple()
   end
 

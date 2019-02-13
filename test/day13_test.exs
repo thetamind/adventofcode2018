@@ -12,7 +12,6 @@ defmodule Day13.TrackMapTest do
         |    |
         \----/
         """
-        |> String.trim_trailing("\n")
 
       map = TrackMap.parse(input)
 
@@ -20,6 +19,18 @@ defmodule Day13.TrackMapTest do
       assert :curve_r == TrackMap.get(map, {5, 3})
       assert :curve_l == TrackMap.get(map, {0, 3})
       assert :empty == TrackMap.get(map, {1, 1})
+    end
+
+    test "ignore blank lines" do
+      input = ~S"""
+      /--\
+      \--/
+
+
+      """
+
+      map = TrackMap.parse(input)
+      assert 2 == tuple_size(map)
     end
   end
 
