@@ -1,0 +1,29 @@
+defmodule Day13.TrackMapTest do
+  use ExUnit.Case, async: true
+
+  alias Day13.TrackMap
+
+  describe "parse/1" do
+    test "example 1" do
+      input =
+        ~S"""
+        /----\
+        |    |
+        |    |
+        \----/
+        """
+        |> String.trim_trailing("\n")
+
+      map = TrackMap.parse(input)
+
+      assert :curve_r == TrackMap.get(map, {0, 0})
+      assert :curve_r == TrackMap.get(map, {5, 3})
+      assert :curve_l == TrackMap.get(map, {0, 3})
+      assert :empty == TrackMap.get(map, {1, 1})
+    end
+  end
+
+  def puzzle_input() do
+    File.read!("priv/day13.txt")
+  end
+end
