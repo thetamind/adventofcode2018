@@ -4,7 +4,7 @@ defmodule Day13.TrackMapTest do
   alias Day13.TrackMap
 
   describe "parse/1" do
-    test "example 1" do
+    test "example 1 intersecting track" do
       input = ~S"""
       /-----\
       |     |
@@ -22,6 +22,23 @@ defmodule Day13.TrackMapTest do
       assert :curve_l == TrackMap.get(map, {3, 6})
       assert :intersection == TrackMap.get(map, {3, 4})
       assert :empty == TrackMap.get(map, {1, 1})
+    end
+
+    test "example 2 carts" do
+      input = ~S"""
+      |
+      v
+      |
+      |
+      |
+      ^
+      |
+      """
+
+      map = TrackMap.parse(input)
+
+      assert :cart_down == TrackMap.get(map, {0, 1})
+      assert :cart_up == TrackMap.get(map, {0, 5})
     end
 
     test "ignore blank lines" do

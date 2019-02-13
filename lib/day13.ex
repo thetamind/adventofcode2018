@@ -29,6 +29,10 @@ defmodule Day13.TrackMap do
       ?/ -> :curve_r
       ?\\ -> :curve_l
       ?+ -> :intersection
+      ?^ -> :cart_up
+      ?v -> :cart_down
+      ?> -> :cart_right
+      ?< -> :cart_left
       ?\s -> :empty
     end
   end
