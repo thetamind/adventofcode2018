@@ -5,19 +5,22 @@ defmodule Day13.TrackMapTest do
 
   describe "parse/1" do
     test "example 1" do
-      input =
-        ~S"""
-        /----\
-        |    |
-        |    |
-        \----/
-        """
+      input = ~S"""
+      /-----\
+      |     |
+      |  /--+--\
+      |  |  |  |
+      \--+--/  |
+         |     |
+         \-----/
+      """
 
       map = TrackMap.parse(input)
 
       assert :curve_r == TrackMap.get(map, {0, 0})
-      assert :curve_r == TrackMap.get(map, {5, 3})
-      assert :curve_l == TrackMap.get(map, {0, 3})
+      assert :curve_r == TrackMap.get(map, {6, 4})
+      assert :curve_l == TrackMap.get(map, {3, 6})
+      assert :intersection == TrackMap.get(map, {3, 4})
       assert :empty == TrackMap.get(map, {1, 1})
     end
 

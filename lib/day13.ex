@@ -28,6 +28,7 @@ defmodule Day13.TrackMap do
       ?- -> :horizontal
       ?/ -> :curve_r
       ?\\ -> :curve_l
+      ?+ -> :intersection
       ?\s -> :empty
     end
   end
