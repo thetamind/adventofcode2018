@@ -15,13 +15,15 @@ defmodule Day13.TrackMapTest do
          \-----/
       """
 
-      map = TrackMap.parse(input)
+      {map, carts} = TrackMap.parse(input)
 
       assert :curve_r == TrackMap.get(map, {0, 0})
       assert :curve_r == TrackMap.get(map, {6, 4})
       assert :curve_l == TrackMap.get(map, {3, 6})
       assert :intersection == TrackMap.get(map, {3, 4})
       assert :empty == TrackMap.get(map, {1, 1})
+
+      assert Enum.empty?(carts)
     end
 
     test "example 2 carts" do
@@ -35,10 +37,32 @@ defmodule Day13.TrackMapTest do
       |
       """
 
-      map = TrackMap.parse(input)
+      {map, carts} = TrackMap.parse(input)
 
-      assert :cart_down == TrackMap.get(map, {0, 1})
-      assert :cart_up == TrackMap.get(map, {0, 5})
+      assert :vertical == TrackMap.get(map, {0, 1})
+      assert :vertical == TrackMap.get(map, {0, 5})
+
+      assert {{0, 1}, :down} == List.first(carts)
+      assert {{0, 5}, :up} == List.last(carts)
+    end
+
+    test "example 3 carts" do
+      input = ~S"""
+      /->-\
+      |   |  /----\
+      | /-+--+-\  |
+      | | |  | v  |
+      \-+-/  \-+--/
+        \------/
+      """
+
+      {map, carts} = TrackMap.parse(input)
+
+      assert :horizontal == TrackMap.get(map, {2, 0})
+      assert :vertical == TrackMap.get(map, {9, 3})
+
+      assert {{2, 0}, :right} == List.first(carts)
+      assert {{9, 3}, :down} == List.last(carts)
     end
 
     test "ignore blank lines" do
@@ -49,7 +73,7 @@ defmodule Day13.TrackMapTest do
 
       """
 
-      map = TrackMap.parse(input)
+      {map, _carts} = TrackMap.parse(input)
       assert 2 == tuple_size(map)
     end
   end
