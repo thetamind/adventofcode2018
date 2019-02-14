@@ -24,8 +24,10 @@ defmodule Day13.TrackMap do
 
   def parse_carts(map) do
     {grid, carts} =
-      Enum.map_reduce(map, [], fn row, acc ->
-        {row, carts} = extract_carts(row)
+      map
+      |> Enum.with_index()
+      |> Enum.map_reduce([], fn {row, y}, acc ->
+        {row, carts} = extract_carts(row, y)
         {row, [carts | acc]}
       end)
 
@@ -34,11 +36,13 @@ defmodule Day13.TrackMap do
     {grid, carts}
   end
 
-  defp extract_carts(row) do
+  defp extract_carts(row, y) do
     {row, carts} =
-      Enum.map_reduce(row, [], fn tile, acc ->
+      row
+      |> Enum.with_index()
+      |> Enum.map_reduce([], fn {tile, x}, acc ->
         case extract_cart(tile) do
-          {tile, cart} -> {tile, [cart | acc]}
+          {tile, cart} -> {tile, [{{x, y}, cart} | acc]}
           tile -> {tile, acc}
         end
       end)
