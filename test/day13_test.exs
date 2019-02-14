@@ -1,3 +1,52 @@
+defmodule Day13.SimulationTest do
+  use ExUnit.Case, async: true
+
+  alias Day13.{TrackMap, Simulation}
+
+  describe "new/1" do
+    test "creates Simulation" do
+      input = ~S"""
+      /--->-\
+      |     |
+      |  /--+--\
+      |  |  |  |
+      \--+>-/  |
+         |     |
+         \-----/
+      """
+
+      {map, carts} = TrackMap.parse(input)
+      simulation = Simulation.new(map, carts)
+
+      assert %Simulation{} = simulation
+    end
+  end
+
+  describe "next_tick" do
+    test "moves carts" do
+      input = ~S"""
+      |
+      v
+      |
+      |
+      |
+      ^
+      |
+      """
+
+      {map, carts} = TrackMap.parse(input)
+      simulation = Simulation.new(map, carts)
+
+      frame1 = Simulation.next_tick(simulation)
+      assert {{0, 2}, :down} == List.first(frame1.carts)
+      assert {{0, 4}, :up} == List.last(frame1.carts)
+      frame2 = Simulation.next_tick(frame1)
+      assert {{0, 3}, :down} == List.first(frame2.carts)
+      assert {{0, 3}, :up} == List.last(frame2.carts)
+    end
+  end
+end
+
 defmodule Day13.TrackMapTest do
   use ExUnit.Case, async: true
 

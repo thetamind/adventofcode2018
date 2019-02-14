@@ -1,6 +1,45 @@
 defmodule Day13 do
 end
 
+defmodule Day13.Simulation do
+  defstruct frame: 0, map: nil, carts: []
+
+  alias __MODULE__
+
+  def new(map, carts) do
+    %__MODULE__{frame: 0, map: map, carts: carts}
+  end
+
+  def next_tick(%Simulation{carts: carts} = state) do
+    next_carts =
+      carts
+      |> sort_carts()
+      |> move_carts()
+
+    # rotate
+    # collisions?
+
+    %Simulation{state | carts: next_carts}
+  end
+
+  def sort_carts(carts) do
+    Enum.sort_by(carts, fn {{x, y}, _dir} -> {y, x} end)
+  end
+
+  def move_carts(carts) do
+    Enum.map(carts, &move_cart/1)
+  end
+
+  def move_cart({{x, y}, dir}) do
+    case dir do
+      :up -> {{x, y - 1}, dir}
+      :down -> {{x, y + 1}, dir}
+      :left -> {{x - 1, y}, dir}
+      :right -> {{x + 1, y - 1}, dir}
+    end
+  end
+end
+
 defmodule Day13.TrackMap do
   def get(map, {x, y}) do
     elem(map, y)
