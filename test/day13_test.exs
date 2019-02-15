@@ -68,6 +68,33 @@ defmodule Day13.SimulationTest do
       assert {{6, 0}, :down} == List.first(frame2.carts)
       assert {{6, 4}, :up} == List.last(frame2.carts)
     end
+
+    test "detect collisions" do
+      input = ~S"""
+      /--->-\
+      |     |
+      |  /--+--\
+      |  |  |  |
+      \--+>-/  |
+         |     |
+         \-----/
+      """
+
+      {map, carts} = TrackMap.parse(input)
+      frame0 = Simulation.new(map, carts)
+
+      frame4 =
+        frame0
+        |> Simulation.next_tick()
+        |> Simulation.next_tick()
+        |> Simulation.next_tick()
+        |> Simulation.next_tick()
+
+      assert {{6, 2}, :down} == List.first(frame4.carts)
+      assert {{6, 2}, :up} == List.last(frame4.carts)
+
+      assert [{6, 2}] == frame4.collisions
+    end
   end
 end
 

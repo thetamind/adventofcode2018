@@ -2,7 +2,7 @@ defmodule Day13 do
 end
 
 defmodule Day13.Simulation do
-  defstruct frame: 0, map: nil, carts: []
+  defstruct frame: 0, map: nil, carts: [], collisions: []
 
   alias __MODULE__
 
@@ -11,15 +11,14 @@ defmodule Day13.Simulation do
   end
 
   def next_tick(%Simulation{map: map, carts: carts} = state) do
-    next_carts =
+    {next_carts, collisions} =
       carts
       |> sort_carts()
       |> move_carts()
       |> rotate_carts(map)
+      |> collisions
 
-    # collisions?
-
-    %Simulation{state | carts: next_carts}
+    %Simulation{state | carts: next_carts, collisions: collisions}
   end
 
   def sort_carts(carts) do
@@ -60,6 +59,21 @@ defmodule Day13.Simulation do
       end
 
     {{x, y}, next_dir}
+  end
+
+  def collisions(carts) do
+    {carts, gather_collisions(carts)}
+  end
+
+  def gather_collisions(carts) do
+    Enum.reduce(carts, {MapSet.new(), MapSet.new()}, fn {{x, y}, _dir}, {elems, dupes} ->
+      case MapSet.member?(elems, {x, y}) do
+        true -> {elems, MapSet.put(dupes, {x, y})}
+        false -> {MapSet.put(elems, {x, y}), dupes}
+      end
+    end)
+    |> elem(1)
+    |> MapSet.to_list()
   end
 end
 
