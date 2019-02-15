@@ -40,9 +40,33 @@ defmodule Day13.SimulationTest do
       frame1 = Simulation.next_tick(simulation)
       assert {{0, 2}, :down} == List.first(frame1.carts)
       assert {{0, 4}, :up} == List.last(frame1.carts)
+
       frame2 = Simulation.next_tick(frame1)
       assert {{0, 3}, :down} == List.first(frame2.carts)
       assert {{0, 3}, :up} == List.last(frame2.carts)
+    end
+
+    test "moves carts around corners" do
+      input = ~S"""
+      /--->-\
+      |     |
+      |  /--+--\
+      |  |  |  |
+      \--+>-/  |
+         |     |
+         \-----/
+      """
+
+      {map, carts} = TrackMap.parse(input)
+      frame0 = Simulation.new(map, carts)
+
+      frame2 =
+        frame0
+        |> Simulation.next_tick()
+        |> Simulation.next_tick()
+
+      assert {{6, 0}, :down} == List.first(frame2.carts)
+      assert {{6, 4}, :up} == List.last(frame2.carts)
     end
   end
 end
