@@ -1,4 +1,15 @@
 defmodule Day13 do
+  alias Day13.Simulation
+
+  def first_crash(simulation) do
+    simulation
+    |> Simulation.all_ticks()
+    |> Enum.find(&crash?/1)
+  end
+
+  defp crash?(sim) do
+    length(sim.collisions) > 0
+  end
 end
 
 defmodule Day13.Simulation do
@@ -8,6 +19,10 @@ defmodule Day13.Simulation do
 
   def new(map, carts) do
     %__MODULE__{frame: 0, map: map, carts: carts}
+  end
+
+  def all_ticks(%Simulation{} = state) do
+    Stream.iterate(state, &next_tick/1)
   end
 
   def next_tick(%Simulation{map: map, carts: carts} = state) do

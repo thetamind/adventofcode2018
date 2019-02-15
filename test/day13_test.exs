@@ -1,5 +1,56 @@
+defmodule Day13Test do
+  use ExUnit.Case, async: true
+
+  @moduletag timeout: 2_000
+
+  alias Day13.{TrackMap, Simulation}
+
+  describe "first_crash/1" do
+    test "example 1" do
+      input = ~S"""
+      |
+      v
+      |
+      |
+      |
+      ^
+      |
+      """
+
+      {map, carts} = TrackMap.parse(input)
+      simulation = Simulation.new(map, carts)
+
+      crash_frame = Day13.first_crash(simulation)
+
+      assert 2 == crash_frame.frame
+      assert {0, 3} == List.first(crash_frame.collisions)
+    end
+
+    test "example 2" do
+      input = ~S"""
+      /->-\
+      |   |  /----\
+      | /-+--+-\  |
+      | | |  | v  |
+      \-+-/  \-+--/
+        \------/
+      """
+
+      {map, carts} = TrackMap.parse(input)
+      simulation = Simulation.new(map, carts)
+
+      crash_frame = Day13.first_crash(simulation)
+
+      assert 14 == crash_frame.frame
+      assert {0, 3} == List.first(crash_frame.collisions)
+    end
+  end
+end
+
 defmodule Day13.SimulationTest do
   use ExUnit.Case, async: true
+
+  @moduletag timeout: 2_000
 
   alias Day13.{TrackMap, Simulation}
 
