@@ -41,6 +41,7 @@ defmodule Day13Test do
 
       crash_frame = Day13.first_crash(simulation)
 
+      assert crash_frame, "Could not find crash"
       assert 14 == crash_frame.frame
       assert {0, 3} == List.first(crash_frame.collisions)
     end

@@ -4,6 +4,7 @@ defmodule Day13 do
   def first_crash(simulation) do
     simulation
     |> Simulation.all_ticks()
+    |> Stream.take(20)
     |> Enum.find(&crash?/1)
   end
 
@@ -25,7 +26,9 @@ defmodule Day13.Simulation do
     Stream.iterate(state, &next_tick/1)
   end
 
-  def next_tick(%Simulation{map: map, carts: carts} = state) do
+  def next_tick(%Simulation{map: map, carts: carts, frame: frame} = state) do
+    next_frame = frame + 1
+
     {next_carts, collisions} =
       carts
       |> sort_carts()
@@ -33,7 +36,7 @@ defmodule Day13.Simulation do
       |> rotate_carts(map)
       |> collisions
 
-    %Simulation{state | carts: next_carts, collisions: collisions}
+    %Simulation{state | frame: next_frame, carts: next_carts, collisions: collisions}
   end
 
   def sort_carts(carts) do
