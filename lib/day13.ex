@@ -101,6 +101,18 @@ defmodule Day13.TrackMap do
     |> elem(x)
   end
 
+  def size(map) do
+    width =
+      map
+      |> Tuple.to_list()
+      |> Enum.max_by(&tuple_size(&1))
+      |> tuple_size()
+
+    height = tuple_size(map)
+
+    {width, height}
+  end
+
   def parse(input) do
     {map, carts} =
       input

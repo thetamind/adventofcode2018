@@ -230,6 +230,23 @@ defmodule Day13.TrackMapTest do
     end
   end
 
+  describe "size/1" do
+    test "map" do
+      input = ~S"""
+      /->-\
+      |   |  /----\
+      | /-+--+-\  |
+      | | |  | v  |
+      \-+-/  \-+--/
+        \------/
+      """
+
+      {map, carts} = TrackMap.parse(input)
+
+      assert {13, 6} == TrackMap.size(map)
+    end
+  end
+
   def puzzle_input() do
     File.read!("priv/day13.txt")
   end
