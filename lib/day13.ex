@@ -203,27 +203,23 @@ defmodule Day13.TrackMap do
     end
   end
 
-  def tile_to_char(tile) do
-    case tile do
+  def symbol_to_char(symbol) do
+    case symbol do
       :vertical -> ?|
       :horizontal -> ?-
       :curve_r -> ?/
       :curve_l -> ?\\
       :intersection -> ?+
+      :collision -> ?X
       :cart_up -> ?^
       :cart_down -> ?v
       :cart_right -> ?>
       :cart_left -> ?<
-      :empty -> ?\s
-    end
-  end
-
-  def dir_to_char(dir) do
-    case dir do
       :up -> ?^
       :down -> ?v
       :right -> ?>
       :left -> ?<
+      :empty -> ?\s
     end
   end
 end
@@ -242,22 +238,28 @@ defmodule Day13.Inspect do
     to_string(state.frame)
   end
 
-  def ascii_map(%Simulation{map: map, carts: carts}) do
-    ascii_map(map, carts)
+  def ascii_map(%Simulation{map: map, carts: carts, collisions: collisions}) do
+    ascii_map(map, carts, collisions)
   end
 
-  def ascii_map(map, carts) do
+  def ascii_map(map, carts, collisions) do
     {width, height} = TrackMap.size(map)
     carts = Map.new(carts)
+    collisions = MapSet.new(collisions)
 
     for y <- 0..(height - 1) do
       for x <- 0..(width - 1) do
-        tile = TrackMap.get(map, {x, y})
+        if MapSet.member?(collisions, {x, y}) do
+          :collision
+        else
+          tile = TrackMap.get(map, {x, y})
 
-        case Map.get(carts, {x, y}) do
-          nil -> TrackMap.tile_to_char(tile)
-          dir -> TrackMap.dir_to_char(dir)
+          case Map.get(carts, {x, y}) do
+            nil -> tile
+            dir -> dir
+          end
         end
+        |> TrackMap.symbol_to_char()
       end
       |> to_string()
     end

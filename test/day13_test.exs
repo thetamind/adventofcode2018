@@ -298,11 +298,51 @@ defmodule Day13.InspectTest do
 
       {map, carts} = TrackMap.parse(input)
 
-      actual = Inspect.ascii_map(map, carts)
+      actual = Inspect.ascii_map(map, carts, [])
 
       assert String.replace(input, " ", "") == String.replace(actual, " ", "")
       assert String.bag_distance(input, actual) >= 0.86
       assert String.jaro_distance(input, actual) >= 0.90
+    end
+
+    test "draw collisions" do
+      input =
+        ~S"""
+        |
+        v
+        |
+        |
+        |
+        ^
+        |
+        """
+        |> String.trim_trailing("\n")
+
+      expected =
+        ~S"""
+        |
+        |
+        |
+        X
+        |
+        |
+        |
+        """
+        |> String.trim_trailing("\n")
+
+      {map, carts} = TrackMap.parse(input)
+      simulation = Simulation.new(map, carts)
+
+      frame2 =
+        simulation
+        |> Simulation.next_tick()
+        |> Simulation.next_tick()
+
+      actual = Inspect.ascii_map(frame2)
+
+      assert String.replace(expected, " ", "") == String.replace(actual, " ", "")
+      assert String.bag_distance(expected, actual) >= 1.0
+      assert String.jaro_distance(expected, actual) >= 1.0
     end
   end
 end
