@@ -230,6 +230,31 @@ defmodule Day13.TrackMapTest do
     end
   end
 
+  describe "get/2" do
+    setup do
+      input = ~S"""
+      /->-\
+      |   |  /----\
+      | /-+--+-\  |
+      | | |  | v  |
+      \-+-/  \-+--/
+        \------/
+      """
+
+      {map, carts} = TrackMap.parse(input)
+
+      [map: map, carts: carts]
+    end
+
+    test "tile exists", %{map: map} do
+      assert :horizontal == TrackMap.get(map, {2, 0})
+    end
+
+    test "tile is empty because row is shorter", %{map: map} do
+      assert :empty == TrackMap.get(map, {7, 0})
+    end
+  end
+
   describe "size/1" do
     test "map" do
       input = ~S"""

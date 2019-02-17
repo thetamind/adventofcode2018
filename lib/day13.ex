@@ -97,8 +97,12 @@ end
 
 defmodule Day13.TrackMap do
   def get(map, {x, y}) do
-    elem(map, y)
-    |> elem(x)
+    try do
+      elem(map, y)
+      |> elem(x)
+    rescue
+      ArgumentError -> :empty
+    end
   end
 
   def size(map) do
