@@ -96,14 +96,19 @@ defmodule Day13.Simulation do
 end
 
 defmodule Day13.TrackMap do
+  @spec get(tuple(), {non_neg_integer, non_neg_integer()}) :: atom | :error
   def get(map, {x, y}) do
-    try do
-      elem(map, y)
-      |> elem(x)
-    rescue
-      ArgumentError -> :empty
+    with {:ok, row} <- safe_elem(map, y),
+         {:ok, tile} <- safe_elem(row, x) do
+      tile
+    else
+      :error -> :empty
     end
   end
+
+  @compile {:inline, safe_elem: 2}
+  defp safe_elem(tuple, index) when index < tuple_size(tuple), do: {:ok, elem(tuple, index)}
+  defp safe_elem(_tuple, _index), do: :error
 
   def size(map) do
     width =

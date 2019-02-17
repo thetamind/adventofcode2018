@@ -248,6 +248,7 @@ defmodule Day13.TrackMapTest do
 
     test "tile exists", %{map: map} do
       assert :horizontal == TrackMap.get(map, {2, 0})
+      assert :vertical == TrackMap.get(map, {4, 3})
     end
 
     test "tile is empty because row is shorter", %{map: map} do
