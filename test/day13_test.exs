@@ -267,7 +267,7 @@ defmodule Day13.TrackMapTest do
         \------/
       """
 
-      {map, carts} = TrackMap.parse(input)
+      {map, _carts} = TrackMap.parse(input)
 
       assert {13, 6} == TrackMap.size(map)
     end
@@ -275,5 +275,34 @@ defmodule Day13.TrackMapTest do
 
   def puzzle_input() do
     File.read!("priv/day13.txt")
+  end
+end
+
+defmodule Day13.InspectTest do
+  use ExUnit.Case, async: true
+
+  alias Day13.{Inspect, Simulation, TrackMap}
+
+  describe "ascii_map/2" do
+    test "reproduces input" do
+      input =
+        ~S"""
+        /->-\
+        |   |  /----\
+        | /-+--+-\  |
+        | | |  | v  |
+        \-+-/  \-+--/
+          \------/
+        """
+        |> String.trim_trailing("\n")
+
+      {map, carts} = TrackMap.parse(input)
+
+      actual = Inspect.ascii_map(map, carts)
+
+      assert String.replace(input, " ", "") == String.replace(actual, " ", "")
+      assert String.bag_distance(input, actual) >= 0.86
+      assert String.jaro_distance(input, actual) >= 0.90
+    end
   end
 end

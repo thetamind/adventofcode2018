@@ -202,4 +202,65 @@ defmodule Day13.TrackMap do
       ?\s -> :empty
     end
   end
+
+  def tile_to_char(tile) do
+    case tile do
+      :vertical -> ?|
+      :horizontal -> ?-
+      :curve_r -> ?/
+      :curve_l -> ?\\
+      :intersection -> ?+
+      :cart_up -> ?^
+      :cart_down -> ?v
+      :cart_right -> ?>
+      :cart_left -> ?<
+      :empty -> ?\s
+    end
+  end
+
+  def dir_to_char(dir) do
+    case dir do
+      :up -> ?^
+      :down -> ?v
+      :right -> ?>
+      :left -> ?<
+    end
+  end
+end
+
+defmodule Day13.Inspect do
+  alias Day13.{Simulation, TrackMap}
+
+  def puts(%Simulation{} = state) do
+    IO.puts(frame(state))
+    IO.puts(ascii_map(state))
+
+    state
+  end
+
+  def frame(%Simulation{} = state) do
+    to_string(state.frame)
+  end
+
+  def ascii_map(%Simulation{map: map, carts: carts}) do
+    ascii_map(map, carts)
+  end
+
+  def ascii_map(map, carts) do
+    {width, height} = TrackMap.size(map)
+    carts = Map.new(carts)
+
+    for y <- 0..(height - 1) do
+      for x <- 0..(width - 1) do
+        tile = TrackMap.get(map, {x, y})
+
+        case Map.get(carts, {x, y}) do
+          nil -> TrackMap.tile_to_char(tile)
+          dir -> TrackMap.dir_to_char(dir)
+        end
+      end
+      |> to_string()
+    end
+    |> Enum.join("\n")
+  end
 end
