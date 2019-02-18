@@ -121,6 +121,26 @@ defmodule Day13.SimulationTest do
       assert {{6, 4}, :up} == List.last(frame2.carts)
     end
 
+    test "carts follow turn sequence at intersections" do
+      map_lookup = fn {_x, _y} ->
+        :intersection
+      end
+
+      cart = {{0, 0}, :up}
+
+      cart = Simulation.rotate_cart(cart, map_lookup)
+      assert {{_, _}, :left} = cart
+
+      cart = Simulation.rotate_cart(cart, map_lookup)
+      assert {{_, _}, :left} = cart
+
+      cart = Simulation.rotate_cart(cart, map_lookup)
+      assert {{_, _}, :up} = cart
+
+      cart = Simulation.rotate_cart(cart, map_lookup)
+      assert {{_, _}, :left} = cart
+    end
+
     test "detect collisions" do
       input = ~S"""
       /--->-\

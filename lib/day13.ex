@@ -29,11 +29,13 @@ defmodule Day13.Simulation do
   def next_tick(%Simulation{map: map, carts: carts, frame: frame} = state) do
     next_frame = frame + 1
 
+    tile_lookup = fn {x, y} -> Day13.TrackMap.get(map, {x, y}) end
+
     {next_carts, collisions} =
       carts
       |> sort_carts()
       |> move_carts()
-      |> rotate_carts(map)
+      |> rotate_carts(tile_lookup)
       |> collisions
 
     %Simulation{state | frame: next_frame, carts: next_carts, collisions: collisions}
@@ -60,8 +62,8 @@ defmodule Day13.Simulation do
     Enum.map(carts, &rotate_cart(&1, map))
   end
 
-  def rotate_cart({{x, y}, dir}, map) do
-    tile = Day13.TrackMap.get(map, {x, y})
+  def rotate_cart({{x, y}, dir}, tile_lookup) do
+    tile = tile_lookup.({x, y})
 
     next_dir =
       case {dir, tile} do
