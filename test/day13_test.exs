@@ -43,7 +43,7 @@ defmodule Day13Test do
 
       assert crash_frame, "Could not find crash"
       assert 14 == crash_frame.frame
-      assert {0, 3} == List.first(crash_frame.collisions)
+      assert {7, 3} == List.first(crash_frame.collisions)
     end
   end
 end
@@ -90,12 +90,12 @@ defmodule Day13.SimulationTest do
       simulation = Simulation.new(map, carts)
 
       frame1 = Simulation.next_tick(simulation)
-      assert {{0, 2}, :down} == List.first(frame1.carts)
-      assert {{0, 4}, :up} == List.last(frame1.carts)
+      assert {{0, 2}, :down, _} = List.first(frame1.carts)
+      assert {{0, 4}, :up, _} = List.last(frame1.carts)
 
       frame2 = Simulation.next_tick(frame1)
-      assert {{0, 3}, :down} == List.first(frame2.carts)
-      assert {{0, 3}, :up} == List.last(frame2.carts)
+      assert {{0, 3}, :down, _} = List.first(frame2.carts)
+      assert {{0, 3}, :up, _} = List.last(frame2.carts)
     end
 
     test "moves carts around corners" do
@@ -117,8 +117,8 @@ defmodule Day13.SimulationTest do
         |> Simulation.next_tick()
         |> Simulation.next_tick()
 
-      assert {{6, 0}, :down} == List.first(frame2.carts)
-      assert {{6, 4}, :up} == List.last(frame2.carts)
+      assert {{6, 0}, :down, _} = List.first(frame2.carts)
+      assert {{6, 4}, :up, _} = List.last(frame2.carts)
     end
 
     test "carts follow turn sequence at intersections" do
@@ -126,19 +126,19 @@ defmodule Day13.SimulationTest do
         :intersection
       end
 
-      cart = {{0, 0}, :up}
+      cart = {{0, 0}, :up, :left}
 
       cart = Simulation.rotate_cart(cart, map_lookup)
-      assert {{_, _}, :left} = cart
+      assert {{_, _}, :left, _} = cart
 
       cart = Simulation.rotate_cart(cart, map_lookup)
-      assert {{_, _}, :left} = cart
+      assert {{_, _}, :left, _} = cart
 
       cart = Simulation.rotate_cart(cart, map_lookup)
-      assert {{_, _}, :up} = cart
+      assert {{_, _}, :up, _} = cart
 
       cart = Simulation.rotate_cart(cart, map_lookup)
-      assert {{_, _}, :left} = cart
+      assert {{_, _}, :left, _} = cart
     end
 
     test "detect collisions" do
@@ -162,8 +162,8 @@ defmodule Day13.SimulationTest do
         |> Simulation.next_tick()
         |> Simulation.next_tick()
 
-      assert {{6, 2}, :down} == List.first(frame4.carts)
-      assert {{6, 2}, :up} == List.last(frame4.carts)
+      assert {{6, 2}, :right, _} = List.first(frame4.carts)
+      assert {{6, 2}, :left, _} = List.last(frame4.carts)
 
       assert [{6, 2}] == frame4.collisions
     end
@@ -317,8 +317,9 @@ defmodule Day13.InspectTest do
         |> String.trim_trailing("\n")
 
       {map, carts} = TrackMap.parse(input)
+      simulation = Simulation.new(map, carts)
 
-      actual = Inspect.ascii_map(map, carts, [])
+      actual = Inspect.ascii_map(simulation)
 
       assert String.replace(input, " ", "") == String.replace(actual, " ", "")
       assert String.bag_distance(input, actual) >= 0.86

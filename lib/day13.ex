@@ -19,7 +19,9 @@ defmodule Day13.Simulation do
   alias __MODULE__
 
   def new(map, carts) do
-    %__MODULE__{frame: 0, map: map, carts: carts}
+    to_cart = fn {{x, y}, dir} -> {{x, y}, dir, :left} end
+
+    %__MODULE__{frame: 0, map: map, carts: Enum.map(carts, to_cart)}
   end
 
   def all_ticks(%Simulation{} = state) do
@@ -42,27 +44,32 @@ defmodule Day13.Simulation do
   end
 
   def sort_carts(carts) do
-    Enum.sort_by(carts, fn {{x, y}, _dir} -> {y, x} end)
+    Enum.sort_by(carts, fn {{x, y}, _, _} ->
+      {y, x}
+    end)
   end
 
   def move_carts(carts) do
     Enum.map(carts, &move_cart/1)
   end
 
-  def move_cart({{x, y}, dir}) do
-    case dir do
-      :up -> {{x, y - 1}, dir}
-      :down -> {{x, y + 1}, dir}
-      :left -> {{x - 1, y}, dir}
-      :right -> {{x + 1, y}, dir}
-    end
+  def move_cart({{x, y}, dir, next_turn}) do
+    next_pos =
+      case dir do
+        :up -> {x, y - 1}
+        :down -> {x, y + 1}
+        :left -> {x - 1, y}
+        :right -> {x + 1, y}
+      end
+
+    {next_pos, dir, next_turn}
   end
 
   def rotate_carts(carts, map) do
     Enum.map(carts, &rotate_cart(&1, map))
   end
 
-  def rotate_cart({{x, y}, dir}, tile_lookup) do
+  def rotate_cart({{x, y}, dir, next_turn}, tile_lookup) do
     tile = tile_lookup.({x, y})
 
     next_dir =
@@ -78,7 +85,50 @@ defmodule Day13.Simulation do
         _ -> dir
       end
 
-    {{x, y}, next_dir}
+    {next_dir, next_turn} =
+      case tile do
+        :intersection -> intersection_turn(dir, next_turn)
+        _ -> {next_dir, next_turn}
+      end
+
+    {{x, y}, next_dir, next_turn}
+  end
+
+  defp intersection_turn(dir, turn) do
+    next_dir =
+      case turn do
+        :left -> turn_left(dir)
+        :straight -> dir
+        :right -> turn_right(dir)
+      end
+
+    {next_dir, turn_sequence(turn)}
+  end
+
+  defp turn_sequence(turn) do
+    case turn do
+      :left -> :straight
+      :straight -> :right
+      :right -> :left
+    end
+  end
+
+  defp turn_left(dir) do
+    case dir do
+      :up -> :left
+      :down -> :right
+      :left -> :down
+      :right -> :up
+    end
+  end
+
+  defp turn_right(dir) do
+    case dir do
+      :up -> :right
+      :down -> :left
+      :left -> :up
+      :right -> :down
+    end
   end
 
   def collisions(carts) do
@@ -86,7 +136,7 @@ defmodule Day13.Simulation do
   end
 
   def gather_collisions(carts) do
-    Enum.reduce(carts, {MapSet.new(), MapSet.new()}, fn {{x, y}, _dir}, {elems, dupes} ->
+    Enum.reduce(carts, {MapSet.new(), MapSet.new()}, fn {{x, y}, _dir, _}, {elems, dupes} ->
       case MapSet.member?(elems, {x, y}) do
         true -> {elems, MapSet.put(dupes, {x, y})}
         false -> {MapSet.put(elems, {x, y}), dupes}
@@ -159,7 +209,7 @@ defmodule Day13.TrackMap do
       |> Enum.with_index()
       |> Enum.map_reduce([], fn {tile, x}, acc ->
         case extract_cart(tile) do
-          {tile, cart} -> {tile, [{{x, y}, cart} | acc]}
+          {tile, cart_dir} -> {tile, [{{x, y}, cart_dir} | acc]}
           tile -> {tile, acc}
         end
       end)
@@ -246,7 +296,7 @@ defmodule Day13.Inspect do
 
   def ascii_map(map, carts, collisions) do
     {width, height} = TrackMap.size(map)
-    carts = Map.new(carts)
+    carts = Map.new(carts, fn {{x, y}, dir, _} -> {{x, y}, dir} end)
     collisions = MapSet.new(collisions)
 
     for y <- 0..(height - 1) do
