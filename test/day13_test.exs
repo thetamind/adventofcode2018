@@ -1,7 +1,7 @@
 defmodule Day13Test do
   use ExUnit.Case, async: true
 
-  @moduletag timeout: 2_000
+  @moduletag timeout: 20_000
 
   alias Day13.{TrackMap, Simulation}
 
@@ -44,6 +44,19 @@ defmodule Day13Test do
       assert crash_frame, "Could not find crash"
       assert 14 == crash_frame.frame
       assert {7, 3} == List.first(crash_frame.collisions)
+    end
+
+    test "puzzle" do
+      input = File.read!("priv/day13.txt")
+
+      {map, carts} = TrackMap.parse(input)
+      simulation = Simulation.new(map, carts)
+
+      crash_frame = Day13.first_crash(simulation)
+
+      assert crash_frame, "Could not find crash"
+      assert 245 == crash_frame.frame
+      assert {115, 104} == List.first(crash_frame.collisions)
     end
   end
 end

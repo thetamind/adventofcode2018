@@ -4,7 +4,7 @@ defmodule Day13 do
   def first_crash(simulation) do
     simulation
     |> Simulation.all_ticks()
-    |> Stream.take(20)
+    |> Stream.take(500)
     |> Enum.find(&crash?/1)
   end
 
