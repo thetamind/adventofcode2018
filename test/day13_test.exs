@@ -55,8 +55,8 @@ defmodule Day13Test do
       crash_frame = Day13.first_crash(simulation)
 
       assert crash_frame, "Could not find crash"
-      assert 245 == crash_frame.frame
-      assert {115, 104} == List.first(crash_frame.collisions)
+      assert 242 == crash_frame.frame
+      assert {83, 121} == List.first(crash_frame.collisions)
     end
   end
 end
@@ -107,8 +107,8 @@ defmodule Day13.SimulationTest do
       assert {{0, 4}, :up, _} = List.last(frame1.carts)
 
       frame2 = Simulation.next_tick(frame1)
-      assert {{0, 3}, :down, _} = List.first(frame2.carts)
-      assert {{0, 3}, :up, _} = List.last(frame2.carts)
+      assert [] == frame2.carts
+      assert [{0, 3}] = frame2.collisions
     end
 
     test "moves carts around corners" do
@@ -175,10 +175,33 @@ defmodule Day13.SimulationTest do
         |> Simulation.next_tick()
         |> Simulation.next_tick()
 
-      assert {{6, 2}, :right, _} = List.first(frame4.carts)
-      assert {{6, 2}, :left, _} = List.last(frame4.carts)
+      assert [] == frame4.carts
 
       assert [{6, 2}] == frame4.collisions
+    end
+
+    test "detect collisions while moving" do
+      input = ~S"""
+      /---\
+      | />+<--\
+      | | ^   |
+      \-+-/   |
+        \-----/
+      """
+
+      {map, carts} = TrackMap.parse(input)
+      frame0 = Simulation.new(map, carts)
+
+      frame1 = Simulation.next_tick(frame0)
+      frame2 = Simulation.next_tick(frame1)
+
+      assert [] == frame0.collisions
+
+      assert [{4, 1}] == frame1.collisions
+      assert [] == frame2.collisions
+
+      assert [{{4, 1}, :left, _}] = frame1.carts
+      assert [{{3, 1}, :left, _}] = frame2.carts
     end
   end
 end

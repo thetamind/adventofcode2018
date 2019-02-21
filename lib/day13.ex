@@ -33,12 +33,10 @@ defmodule Day13.Simulation do
 
     tile_lookup = fn {x, y} -> Day13.TrackMap.get(map, {x, y}) end
 
-    {next_carts, collisions} =
+    %{carts: next_carts, collisions: collisions} =
       carts
       |> sort_carts()
-      |> move_carts()
-      |> rotate_carts(tile_lookup)
-      |> collisions
+      |> move_carts_and_remove_collisions(tile_lookup)
 
     %Simulation{state | frame: next_frame, carts: next_carts, collisions: collisions}
   end
@@ -47,6 +45,38 @@ defmodule Day13.Simulation do
     Enum.sort_by(carts, fn {{x, y}, _, _} ->
       {y, x}
     end)
+  end
+
+  def move_carts_and_remove_collisions(carts, tile_lookup) do
+    positions = carts |> Enum.map(&elem(&1, 0))
+    carts = Map.new(carts, fn {pos, _, _} = cart -> {pos, cart} end)
+    state = %{carts: carts, collisions: []}
+
+    %{carts: next_carts, collisions: collisions} =
+      Enum.reduce(positions, state, &move_cart_and_remove_collisions(&2, &1, tile_lookup))
+
+    %{carts: Map.values(next_carts), collisions: collisions}
+  end
+
+  def move_cart_and_remove_collisions(state, position, tile_lookup) do
+    case Map.fetch(state.carts, position) do
+      {:ok, cart} ->
+        state = update_in(state.carts, &Map.delete(&1, position))
+        cart = move_cart(cart)
+        cart = rotate_cart(cart, tile_lookup)
+        {next_pos, _, _} = cart
+
+        case Map.pop(state.carts, next_pos) do
+          {nil, _} ->
+            put_in(state.carts[next_pos], cart)
+
+          {_crashed, rest_carts} ->
+            %{state | carts: rest_carts, collisions: [next_pos | state.collisions]}
+        end
+
+      :error ->
+        state
+    end
   end
 
   def move_carts(carts) do
@@ -129,21 +159,6 @@ defmodule Day13.Simulation do
       :left -> :up
       :right -> :down
     end
-  end
-
-  def collisions(carts) do
-    {carts, gather_collisions(carts)}
-  end
-
-  def gather_collisions(carts) do
-    Enum.reduce(carts, {MapSet.new(), MapSet.new()}, fn {{x, y}, _dir, _}, {elems, dupes} ->
-      case MapSet.member?(elems, {x, y}) do
-        true -> {elems, MapSet.put(dupes, {x, y})}
-        false -> {MapSet.put(elems, {x, y}), dupes}
-      end
-    end)
-    |> elem(1)
-    |> MapSet.to_list()
   end
 end
 
