@@ -58,6 +58,42 @@ defmodule Day13Test do
       assert 242 == crash_frame.frame
       assert {83, 121} == List.first(crash_frame.collisions)
     end
+
+    test "example part 2" do
+      input = ~S"""
+      />-<\
+      |   |
+      | /<+-\
+      | | | v
+      \>+</ |
+        |   ^
+        \<->/
+      """
+
+      {map, carts} = TrackMap.parse(input)
+      simulation = Simulation.new(map, carts)
+
+      frame = Day13.last_cart(simulation)
+
+      assert frame, "Could not find cart"
+      assert 3 == frame.frame
+
+      assert [{{6, 4}, _, _}] = frame.carts
+    end
+
+    test "puzzle part 2" do
+      input = File.read!("priv/day13.txt")
+
+      {map, carts} = TrackMap.parse(input)
+      simulation = Simulation.new(map, carts)
+
+      frame = Day13.last_cart(simulation)
+
+      assert frame, "Could not find cart"
+      assert 11835 == frame.frame
+
+      assert [{{102, 144}, _, _}] = frame.carts
+    end
   end
 end
 

@@ -8,8 +8,19 @@ defmodule Day13 do
     |> Enum.find(&crash?/1)
   end
 
+  def last_cart(simulation) do
+    simulation
+    |> Simulation.all_ticks()
+    |> Stream.take(50_000)
+    |> Enum.find(&last_cart?/1)
+  end
+
   defp crash?(sim) do
     length(sim.collisions) > 0
+  end
+
+  def last_cart?(sim) do
+    length(sim.carts) == 1
   end
 end
 
