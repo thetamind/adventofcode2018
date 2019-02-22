@@ -7,4 +7,54 @@ defmodule Day14Test do
       assert 0_124_515_891 == Day14.next_ten(5)
     end
   end
+
+  describe "round_stream/1" do
+    test "at round number" do
+      assert %{board: [3, 7, 1, 0]} = Day14.round_at(1)
+
+      expected = [3, 7, 1, 0, 1, 0, 1, 2, 4, 5, 1, 5, 8, 9]
+      assert %{board: ^expected} = Day14.round_at(10)
+    end
+  end
+
+  describe "move_elf/2" do
+    test "example" do
+      assert 0 == Day14.move_elf({0, 3}, 4)
+      assert 1 == Day14.move_elf({1, 7}, 4)
+    end
+  end
+
+  describe "inspect_round/1" do
+    test "first" do
+      expected = ~S"""
+      (3)[7]
+      (3)[7] 1  0
+       3  7  1 [0](1) 0
+       3  7  1  0 [1] 0 (1)
+      (3) 7  1  0  1  0 [1] 2
+       3  7  1  0 (1) 0  1  2 [4]
+       3  7  1 [0] 1  0 (1) 2  4  5
+       3  7  1  0 [1] 0  1  2 (4) 5  1
+       3 (7) 1  0  1  0 [1] 2  4  5  1  5
+       3  7  1  0  1  0  1  2 [4](5) 1  5  8
+       3 (7) 1  0  1  0  1  2  4  5  1  5  8 [9]
+       3  7  1  0  1  0  1 [2] 4 (5) 1  5  8  9  1  6
+       3  7  1  0  1  0  1  2  4  5 [1] 5  8  9  1 (6) 7
+       3  7  1  0 (1) 0  1  2  4  5  1  5 [8] 9  1  6  7  7
+       3  7 [1] 0  1  0 (1) 2  4  5  1  5  8  9  1  6  7  7  9
+       3  7  1  0 [1] 0  1  2 (4) 5  1  5  8  9  1  6  7  7  9  2
+      """
+
+      actual =
+        %Day14{}
+        |> Day14.round_stream()
+        |> Enum.take(16)
+        |> Enum.map(&Day14.inspect_round/1)
+        |> Enum.join("\n")
+
+      anti_whitespace = &String.replace(&1, ~r/\s+/, "")
+
+      assert anti_whitespace.(expected) == anti_whitespace.(actual)
+    end
+  end
 end
