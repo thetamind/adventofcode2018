@@ -1,10 +1,18 @@
 defmodule Day14Test do
   use ExUnit.Case, async: true
 
+  @moduletag timeout: 20_000
+
   describe "next_ten/1" do
     test "returns scores of the next ten recipes" do
       assert 5_158_916_779 == Day14.next_ten(9)
       assert 0_124_515_891 == Day14.next_ten(5)
+      assert 9_251_071_085 == Day14.next_ten(18)
+      assert 5_941_429_882 == Day14.next_ten(2018)
+    end
+
+    test "puzzle" do
+      assert 5_158_916_779 == Day14.next_ten(327_901)
     end
   end
 

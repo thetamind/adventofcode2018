@@ -3,13 +3,18 @@ defmodule Day14 do
 
   alias __MODULE__
 
-  #
-  # target = round_stream |> Stream.at(num_rounds)
-  # next_ten_recipes = round_stream(target) |> capture_next_ten
-  def next_ten(num_rounds) do
-    round_stream(%Day14{})
-    |> Stream.take(num_rounds)
-    |> Enum.to_list()
+  def next_ten(num_recipes) do
+    %{board: board} =
+      round_stream()
+      |> Stream.take_while(fn %{board: board} ->
+        Enum.count(board) <= num_recipes + 15
+      end)
+      |> Enum.at(-1)
+
+    board
+    |> Enum.drop(num_recipes)
+    |> Enum.take(10)
+    |> Integer.undigits()
   end
 
   def round_at(round) do
