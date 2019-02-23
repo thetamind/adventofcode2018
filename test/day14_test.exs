@@ -18,10 +18,10 @@ defmodule Day14Test do
 
   describe "round_stream/1" do
     test "at round number" do
-      assert %{board: [3, 7, 1, 0]} = Day14.round_at(1)
+      assert [3, 7, 1, 0] == Day14.round_at(1) |> Day14.scoreboard()
 
       expected = [3, 7, 1, 0, 1, 0, 1, 2, 4, 5, 1, 5, 8, 9]
-      assert %{board: ^expected} = Day14.round_at(10)
+      assert expected == Day14.round_at(10) |> Day14.scoreboard()
     end
   end
 
@@ -63,6 +63,13 @@ defmodule Day14Test do
       anti_whitespace = &String.replace(&1, ~r/\s+/, "")
 
       assert anti_whitespace.(expected) == anti_whitespace.(actual)
+    end
+  end
+
+  describe "append_vector/2" do
+    test "adds sequential keys to map" do
+      assert %{0 => :a, 1 => :b, 2 => :c, 3 => :d} ==
+               Day14.append_vector(%{0 => :a, 1 => :b}, [:c, :d])
     end
   end
 end

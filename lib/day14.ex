@@ -1,9 +1,9 @@
 defmodule Day14 do
   alias __MODULE__
-  defstruct board: [3, 7], elves: [0, 1]
+  defstruct board: %{0 => 3, 1 => 7}, elves: [0, 1]
 
   @type t() :: %Day14{
-          board: [non_neg_integer],
+          board: %{non_neg_integer => non_neg_integer},
           elves: [non_neg_integer]
         }
 
@@ -16,8 +16,11 @@ defmodule Day14 do
       |> Enum.at(-1)
 
     board
+    |> Map.to_list()
+    |> Enum.sort()
     |> Enum.drop(num_recipes)
     |> Enum.take(10)
+    |> Keyword.values()
     |> Integer.undigits()
   end
 
@@ -36,12 +39,12 @@ defmodule Day14 do
   def next_round(%Day14{board: board, elves: elves} = state) do
     recipes =
       elves
-      |> Enum.map(&Enum.at(board, &1))
+      |> Enum.map(&Map.get(board, &1))
 
     sum = Enum.sum(recipes)
     new_recipes = Integer.digits(sum)
 
-    next_board = board ++ new_recipes
+    next_board = append_vector(board, new_recipes)
     length = Enum.count(next_board)
 
     next_elves =
@@ -68,13 +71,33 @@ defmodule Day14 do
     elves_map = Enum.with_index(elves) |> Map.new()
 
     board
-    |> Enum.with_index()
-    |> Enum.reduce("", fn {score, board_index}, acc ->
+    |> Enum.reduce("", fn {board_index, score}, acc ->
       acc <>
         case Map.fetch(elves_map, board_index) do
           {:ok, elf_index} -> decorate.(score, elf_index) |> pad.()
           :error -> score |> to_string |> pad.()
         end
     end)
+  end
+
+  @spec scoreboard(%{board: map()}) :: [non_neg_integer]
+  def scoreboard(%{board: board}) do
+    board
+    |> Map.to_list()
+    |> Enum.sort()
+    |> Keyword.values()
+  end
+
+  def append_vector(map, more) do
+    max = Map.keys(map) |> Enum.max()
+
+    source = Stream.iterate(max + 1, &(&1 + 1))
+
+    more_map =
+      source
+      |> Enum.zip(more)
+      |> Map.new()
+
+    Map.merge(map, more_map)
   end
 end
