@@ -1,7 +1,11 @@
 defmodule Day14 do
+  alias __MODULE__
   defstruct board: [3, 7], elves: [0, 1]
 
-  alias __MODULE__
+  @type t() :: %Day14{
+          board: [non_neg_integer],
+          elves: [non_neg_integer]
+        }
 
   def next_ten(num_recipes) do
     %{board: board} =
@@ -17,15 +21,18 @@ defmodule Day14 do
     |> Integer.undigits()
   end
 
+  @spec round_at(non_neg_integer()) :: Day14.t()
   def round_at(round) do
     round_stream(%Day14{})
     |> Enum.at(round)
   end
 
+  @spec round_stream(Day14.t()) :: Enumerable.t()
   def round_stream(initial \\ %Day14{}) do
     Stream.iterate(initial, &next_round/1)
   end
 
+  @spec next_round(Day14.t()) :: Day14.t()
   def next_round(%Day14{board: board, elves: elves} = state) do
     recipes =
       elves
@@ -49,7 +56,7 @@ defmodule Day14 do
     Integer.mod(elf + 1 + recipe, length)
   end
 
-  @spec inspect_round(Day14.t()) :: any()
+  @spec inspect_round(Day14.t()) :: String.t()
   def inspect_round(%Day14{board: board, elves: elves}) do
     pad = fn string -> String.pad_leading(string, 3) end
 
