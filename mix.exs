@@ -27,7 +27,7 @@ defmodule AOC2018.MixProject do
   defp deps do
     [
       {:dialyxir, "~> 1.0.0-rc.4", only: [:dev], runtime: false},
-      {:benchee, "~> 0.13.2", only: [:dev, :test]}
+      {:benchee, "~> 0.14.0", only: [:dev, :test]}
     ]
   end
 end
