@@ -1,6 +1,37 @@
+defmodule Day14.Vector do
+  def new(values) do
+    values
+    |> Enum.with_index()
+    |> Map.new(fn {v, idx} -> {idx, v} end)
+  end
+
+  def append(map, more) do
+    max = Map.keys(map) |> Enum.max()
+
+    source = Stream.iterate(max + 1, &(&1 + 1))
+
+    more_map =
+      source
+      |> Enum.zip(more)
+      |> Map.new()
+
+    Map.merge(map, more_map)
+  end
+
+  def at(vector, index) do
+    Map.fetch(vector, index)
+  end
+
+  def values(vector) do
+    Map.values(vector)
+  end
+end
+
 defmodule Day14 do
   alias __MODULE__
-  defstruct board: %{0 => 3, 1 => 7}, elves: [0, 1]
+  alias Day14.Vector
+
+  defstruct board: Vector.new([3, 7]), elves: [0, 1]
 
   @type t() :: %Day14{
           board: %{non_neg_integer => non_neg_integer},
@@ -44,7 +75,7 @@ defmodule Day14 do
     sum = Enum.sum(recipes)
     new_recipes = Integer.digits(sum)
 
-    next_board = append_vector(board, new_recipes)
+    next_board = Vector.append(board, new_recipes)
     length = Enum.count(next_board)
 
     next_elves =
@@ -86,18 +117,5 @@ defmodule Day14 do
     |> Map.to_list()
     |> Enum.sort()
     |> Keyword.values()
-  end
-
-  def append_vector(map, more) do
-    max = Map.keys(map) |> Enum.max()
-
-    source = Stream.iterate(max + 1, &(&1 + 1))
-
-    more_map =
-      source
-      |> Enum.zip(more)
-      |> Map.new()
-
-    Map.merge(map, more_map)
   end
 end

@@ -65,11 +65,67 @@ defmodule Day14Test do
       assert anti_whitespace.(expected) == anti_whitespace.(actual)
     end
   end
+end
 
-  describe "append_vector/2" do
-    test "adds sequential keys to map" do
-      assert %{0 => :a, 1 => :b, 2 => :c, 3 => :d} ==
-               Day14.append_vector(%{0 => :a, 1 => :b}, [:c, :d])
+defmodule Day14.VectorTest do
+  use ExUnit.Case, async: true
+
+  alias Day14.Vector
+
+  describe "append/2" do
+    test "adds sequential keys" do
+      vector = Vector.new([:a, :b])
+      result = Vector.append(vector, [:c, :d])
+
+      assert [:a, :b, :c, :d] == Vector.values(result)
+      assert {:ok, :c} == Vector.at(result, 2)
     end
+  end
+
+  describe "at/2" do
+    test "present" do
+      assert {:ok, 80} == Vector.at(large_vector(), 80)
+    end
+
+    test "absent" do
+      assert :error == Vector.at(large_vector(), 1_000)
+    end
+  end
+
+  describe "benchmark" do
+    @describetag :bench
+    @describetag timeout: 120_000
+
+    test "append/2" do
+      values = fn n ->
+        Stream.cycle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        |> Enum.take(n)
+      end
+
+      inputs =
+        [0, 1000, 10_000]
+        |> JunkDrawer.selections(2)
+        |> Map.new(fn [i, a] ->
+          {"#{i}/#{a}", {i, values.(a), Vector.new(0..i)}}
+        end)
+
+      Benchee.run(
+        %{
+          "original" => fn {_i, a, vector} -> Vector.append(vector, a) end
+        },
+        time: 3,
+        memory_time: 0,
+        warmup: 0.5,
+        inputs: inputs
+      )
+    end
+
+    test ""
+  end
+
+  defp large_vector do
+    0..20
+    |> Vector.new()
+    |> Vector.append(21..500)
   end
 end
