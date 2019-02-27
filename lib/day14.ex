@@ -1,11 +1,34 @@
 defmodule Day14.Vector do
+  defstruct map: %{}, length: 0
+
+  alias __MODULE__
+
+  @type t :: %Vector{
+          map: %{non_neg_integer => non_neg_integer},
+          length: non_neg_integer
+        }
+
   def new(values) do
-    values
-    |> Enum.with_index()
-    |> Map.new(fn {v, idx} -> {idx, v} end)
+    map =
+      values
+      |> Enum.with_index()
+      |> Map.new(fn {v, idx} -> {idx, v} end)
+
+    %Vector{map: map, length: Map.size(map)}
   end
 
-  def append(map, more) do
+  def append(%{map: map, length: length} = vector, more) do
+    more_map =
+      more
+      |> Enum.with_index(length)
+      |> Enum.map(fn {v, i} -> {i, v} end)
+      |> Map.new()
+
+    next_map = Map.merge(map, more_map)
+    %{vector | map: next_map, length: length + Enum.count(more)}
+  end
+
+  def naïve_append(%{map: map} = vector, more) do
     max = Map.keys(map) |> Enum.max()
 
     source = Stream.iterate(max + 1, &(&1 + 1))
@@ -15,15 +38,25 @@ defmodule Day14.Vector do
       |> Enum.zip(more)
       |> Map.new()
 
-    Map.merge(map, more_map)
+    %{vector | map: Map.merge(map, more_map)}
   end
 
-  def at(vector, index) do
-    Map.fetch(vector, index)
+  def at(%{map: map}, index) do
+    Map.get(map, index)
   end
 
-  def values(vector) do
-    Map.values(vector)
+  def fetch(%{map: map}, index) do
+    Map.fetch(map, index)
+  end
+
+  def size(%{length: length}), do: length
+
+  def to_list(%{map: map}) do
+    Map.to_list(map)
+  end
+
+  def values(%{map: map}) do
+    Map.values(map)
   end
 end
 
@@ -34,7 +67,7 @@ defmodule Day14 do
   defstruct board: Vector.new([3, 7]), elves: [0, 1]
 
   @type t() :: %Day14{
-          board: %{non_neg_integer => non_neg_integer},
+          board: Vector.t(),
           elves: [non_neg_integer]
         }
 
@@ -42,12 +75,12 @@ defmodule Day14 do
     %{board: board} =
       round_stream()
       |> Stream.take_while(fn %{board: board} ->
-        Enum.count(board) <= num_recipes + 15
+        Vector.size(board) <= num_recipes + 15
       end)
       |> Enum.at(-1)
 
     board
-    |> Map.to_list()
+    |> Vector.to_list()
     |> Enum.sort()
     |> Enum.drop(num_recipes)
     |> Enum.take(10)
@@ -70,13 +103,13 @@ defmodule Day14 do
   def next_round(%Day14{board: board, elves: elves} = state) do
     recipes =
       elves
-      |> Enum.map(&Map.get(board, &1))
+      |> Enum.map(&Vector.at(board, &1))
 
     sum = Enum.sum(recipes)
     new_recipes = Integer.digits(sum)
 
     next_board = Vector.append(board, new_recipes)
-    length = Enum.count(next_board)
+    length = Vector.size(next_board)
 
     next_elves =
       elves
@@ -102,6 +135,7 @@ defmodule Day14 do
     elves_map = Enum.with_index(elves) |> Map.new()
 
     board
+    |> Vector.to_list()
     |> Enum.reduce("", fn {board_index, score}, acc ->
       acc <>
         case Map.fetch(elves_map, board_index) do
@@ -111,11 +145,15 @@ defmodule Day14 do
     end)
   end
 
-  @spec scoreboard(%{board: map()}) :: [non_neg_integer]
+  @spec scoreboard(%{board: Vector.t()}) :: [{non_neg_integer, non_neg_integer}]
   def scoreboard(%{board: board}) do
     board
-    |> Map.to_list()
-    |> Enum.sort()
-    |> Keyword.values()
+    |> Vector.to_list()
+  end
+
+  @spec scores(%{board: Vector.t()}) :: [non_neg_integer]
+  def scores(%{board: board}) do
+    board
+    |> Vector.values()
   end
 end

@@ -1,7 +1,7 @@
 defmodule Day14Test do
   use ExUnit.Case, async: true
 
-  @moduletag timeout: 20_000
+  @moduletag timeout: 5_000
 
   describe "next_ten/1" do
     test "returns scores of the next ten recipes" do
@@ -12,16 +12,16 @@ defmodule Day14Test do
     end
 
     test "puzzle" do
-      assert 5_158_916_779 == Day14.next_ten(327_901)
+      assert 1_115_317_115 == Day14.next_ten(327_901)
     end
   end
 
   describe "round_stream/1" do
     test "at round number" do
-      assert [3, 7, 1, 0] == Day14.round_at(1) |> Day14.scoreboard()
+      assert [3, 7, 1, 0] == Day14.round_at(1) |> Day14.scores()
 
       expected = [3, 7, 1, 0, 1, 0, 1, 2, 4, 5, 1, 5, 8, 9]
-      assert expected == Day14.round_at(10) |> Day14.scoreboard()
+      assert expected == Day14.round_at(10) |> Day14.scores()
     end
   end
 
@@ -78,17 +78,50 @@ defmodule Day14.VectorTest do
       result = Vector.append(vector, [:c, :d])
 
       assert [:a, :b, :c, :d] == Vector.values(result)
-      assert {:ok, :c} == Vector.at(result, 2)
+      assert :c == Vector.at(result, 2)
     end
   end
 
   describe "at/2" do
     test "present" do
-      assert {:ok, 80} == Vector.at(large_vector(), 80)
+      assert 80 == Vector.at(large_vector(), 80)
     end
 
     test "absent" do
-      assert :error == Vector.at(large_vector(), 1_000)
+      assert nil == Vector.at(large_vector(), 1_000)
+    end
+  end
+
+  describe "fetch/2" do
+    test "present" do
+      assert {:ok, 80} == Vector.fetch(large_vector(), 80)
+    end
+
+    test "absent" do
+      assert :error == Vector.fetch(large_vector(), 1_000)
+    end
+  end
+
+  describe "size/1" do
+    test "correct after append" do
+      values = fn n ->
+        Stream.cycle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        |> Enum.take(n)
+      end
+
+      vector = Vector.new(values.(300))
+      assert 300 == Vector.size(vector)
+
+      result = Vector.append(vector, values.(700))
+      assert 1_000 == Vector.size(result)
+    end
+  end
+
+  describe "to_list/1" do
+    test "list of two-element tuples" do
+      vector = Vector.new([:a, :b, :c, :d, :e])
+
+      assert [{0, :a}, {1, :b}, {2, :c}, {3, :d}, {4, :e}] == Vector.to_list(vector)
     end
   end
 
@@ -111,7 +144,8 @@ defmodule Day14.VectorTest do
 
       Benchee.run(
         %{
-          "original" => fn {_i, a, vector} -> Vector.append(vector, a) end
+          "naïve" => fn {_i, a, vector} -> Vector.naïve_append(vector, a) end,
+          "save length" => fn {_i, a, vector} -> Vector.append(vector, a) end
         },
         time: 3,
         memory_time: 0,
@@ -119,8 +153,6 @@ defmodule Day14.VectorTest do
         inputs: inputs
       )
     end
-
-    test ""
   end
 
   defp large_vector do
