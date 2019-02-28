@@ -1,63 +1,37 @@
 defmodule Day14.Vector do
-  defstruct map: %{}
+  @type t :: %{non_neg_integer => non_neg_integer}
 
-  alias __MODULE__
-
-  @type t :: %Vector{
-          map: %{non_neg_integer => non_neg_integer}
-        }
+  defdelegate at(map, index), to: Map, as: :get
+  defdelegate fetch(map, index), to: Map
+  defdelegate size(map), to: Map
 
   def new(values) do
-    map =
-      values
-      |> Enum.with_index()
-      |> Map.new(fn {v, idx} -> {idx, v} end)
-
-    %Vector{map: map}
+    values
+    |> Enum.with_index()
+    |> Map.new(fn {v, idx} -> {idx, v} end)
   end
 
-  def append(%{map: map} = vector, more) do
-    length = map_size(map)
+  def append(vector, more) do
+    length = map_size(vector)
 
     more_map =
       more
       |> Enum.with_index(length)
-      |> Enum.map(fn {v, i} -> {i, v} end)
-      |> Map.new()
+      |> Map.new(fn {v, idx} -> {idx, v} end)
 
-    next_map = Map.merge(map, more_map)
-    %{vector | map: next_map}
+    Map.merge(vector, more_map)
   end
 
-  def naïve_append(%{map: map} = vector, more) do
-    max = Map.keys(map) |> Enum.max()
-
-    source = Stream.iterate(max + 1, &(&1 + 1))
-
-    more_map =
-      source
-      |> Enum.zip(more)
-      |> Map.new()
-
-    %{vector | map: Map.merge(map, more_map)}
+  def to_list(map) do
+    map
+    |> Map.to_list()
+    |> Enum.sort()
   end
 
-  def at(%{map: map}, index) do
-    Map.get(map, index)
-  end
-
-  def fetch(%{map: map}, index) do
-    Map.fetch(map, index)
-  end
-
-  def size(%{map: map}), do: map_size(map)
-
-  def to_list(%{map: map}) do
-    Map.to_list(map)
-  end
-
-  def values(%{map: map}) do
-    Map.values(map)
+  def values(map) do
+    map
+    |> to_list()
+    |> Keyword.values()
   end
 end
 
@@ -81,11 +55,9 @@ defmodule Day14 do
       |> Enum.at(-1)
 
     board
-    |> Vector.to_list()
-    |> Enum.sort()
+    |> Vector.values()
     |> Enum.drop(num_recipes)
     |> Enum.take(10)
-    |> Keyword.values()
     |> Integer.undigits()
   end
 

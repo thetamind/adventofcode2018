@@ -123,35 +123,23 @@ defmodule Day14.VectorTest do
 
       assert [{0, :a}, {1, :b}, {2, :c}, {3, :d}, {4, :e}] == Vector.to_list(vector)
     end
+
+    test "ordered when large map" do
+      assert [{0, 0}, {1, 1}, {2, 2}, {3, 3}, {4, 4}] ==
+               Vector.to_list(large_vector()) |> Enum.take(5)
+    end
   end
 
-  describe "benchmark" do
-    @describetag :bench
-    @describetag timeout: 120_000
+  describe "values/1" do
+    test "list of two-element tuples" do
+      vector = Vector.new([:a, :b, :c, :d, :e])
 
-    test "append/2" do
-      values = fn n ->
-        Stream.cycle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-        |> Enum.take(n)
-      end
+      assert [:a, :b, :c, :d, :e] == Vector.values(vector)
+    end
 
-      inputs =
-        [0, 1000, 10_000]
-        |> JunkDrawer.selections(2)
-        |> Map.new(fn [i, a] ->
-          {"#{i}/#{a}", {i, values.(a), Vector.new(0..i)}}
-        end)
-
-      Benchee.run(
-        %{
-          "naïve" => fn {_i, a, vector} -> Vector.naïve_append(vector, a) end,
-          "map_size" => fn {_i, a, vector} -> Vector.append(vector, a) end
-        },
-        time: 3,
-        memory_time: 0,
-        warmup: 0.5,
-        inputs: inputs
-      )
+    test "ordered when large map" do
+      assert [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] ==
+               Vector.values(large_vector()) |> Enum.take(10)
     end
   end
 
