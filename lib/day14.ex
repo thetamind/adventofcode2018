@@ -1,11 +1,10 @@
 defmodule Day14.Vector do
-  defstruct map: %{}, length: 0
+  defstruct map: %{}
 
   alias __MODULE__
 
   @type t :: %Vector{
-          map: %{non_neg_integer => non_neg_integer},
-          length: non_neg_integer
+          map: %{non_neg_integer => non_neg_integer}
         }
 
   def new(values) do
@@ -14,10 +13,12 @@ defmodule Day14.Vector do
       |> Enum.with_index()
       |> Map.new(fn {v, idx} -> {idx, v} end)
 
-    %Vector{map: map, length: Map.size(map)}
+    %Vector{map: map}
   end
 
-  def append(%{map: map, length: length} = vector, more) do
+  def append(%{map: map} = vector, more) do
+    length = map_size(map)
+
     more_map =
       more
       |> Enum.with_index(length)
@@ -25,7 +26,7 @@ defmodule Day14.Vector do
       |> Map.new()
 
     next_map = Map.merge(map, more_map)
-    %{vector | map: next_map, length: length + Enum.count(more)}
+    %{vector | map: next_map}
   end
 
   def naïve_append(%{map: map} = vector, more) do
@@ -49,7 +50,7 @@ defmodule Day14.Vector do
     Map.fetch(map, index)
   end
 
-  def size(%{length: length}), do: length
+  def size(%{map: map}), do: map_size(map)
 
   def to_list(%{map: map}) do
     Map.to_list(map)

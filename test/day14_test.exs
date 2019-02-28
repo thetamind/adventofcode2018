@@ -145,7 +145,7 @@ defmodule Day14.VectorTest do
       Benchee.run(
         %{
           "naïve" => fn {_i, a, vector} -> Vector.naïve_append(vector, a) end,
-          "save length" => fn {_i, a, vector} -> Vector.append(vector, a) end
+          "map_size" => fn {_i, a, vector} -> Vector.append(vector, a) end
         },
         time: 3,
         memory_time: 0,
